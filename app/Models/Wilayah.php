@@ -27,4 +27,9 @@ class Wilayah extends Model
         'latitude',
         'longitude',
     ];
+
+    public function induk()
+{
+    return $this->belongsTo(Wilayah::class, 'parent_id', 'id_wilayah');
+}
 }

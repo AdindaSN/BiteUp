@@ -53,7 +53,7 @@
         <div class="brand"><span class="logo">B</span> BiteUp</div>
         <nav>
             <a href="#" class="menu">Dashboard</a>
-            <a href="{{ route('wilayah.create') }}" class="menu {{ request()->routeIs('wilayah.*') ? 'active' : '' }}">Wilayah</a>
+            <a href="{{ route('wilayah.index') }}" class="menu {{ request()->routeIs('wilayah.*') ? 'active' : '' }}">Wilayah</a>
             <a href="#" class="menu">Indikator</a>
             <a href="#" class="menu">Kelompok Sasaran</a>
             <a href="#" class="menu">Program</a>

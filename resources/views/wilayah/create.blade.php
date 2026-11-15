@@ -4,7 +4,7 @@
 
 @section('content')
     <h1 class="page-title">Tambah Wilayah</h1>
-    <p class="breadcrumb">Beranda &rsaquo; Wilayah &rsaquo; Tambah</p>
+    <p class="breadcrumb"><a href="{{ route('wilayah.index') }}" style="color: inherit;">Beranda &rsaquo; Wilayah</a> &rsaquo; Tambah</p>
 
     <div class="card">
         @if (session('success'))
@@ -72,8 +72,9 @@
             </div>
 
             <div class="actions">
-                <button type="submit" class="btn btn-primary">Simpan</button>
-                <button type="reset" class="btn btn-light">Reset</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <button type="reset" class="btn btn-light">Reset</button>
+            <a href="{{ route('wilayah.index') }}" class="btn btn-light" style="text-decoration: none; display: inline-block;">Kembali</a>
             </div>
         </form>
     </div>

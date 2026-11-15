@@ -8,6 +8,26 @@ use Illuminate\Validation\Rule;
 
 class WilayahController extends Controller
 {
+    // Daftar wilayah, dengan pencarian nama dan filter jenis
+    public function index(Request $request)
+    {
+        $query = Wilayah::with('induk');
+
+        if ($request->filled('cari')) {
+            $query->where('nama_wilayah', 'like', '%' . $request->cari . '%');
+        }
+
+        if ($request->filled('level')) {
+            $query->where('level', $request->level);
+        }
+
+        $wilayah = $query->orderBy('nama_wilayah')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('wilayah.index', compact('wilayah'));
+    }
+
     public function create()
     {
         $induk = Wilayah::orderBy('nama_wilayah')->get();
@@ -17,7 +37,6 @@ class WilayahController extends Controller
 
     public function store(Request $request)
     {
-        // Ubah "123.000.000" atau "123,000,000" jadi "123000000" sebelum divalidasi
         $request->merge([
             'jumlah_penduduk' => $this->bersihkanAngka($request->input('jumlah_penduduk')),
         ]);
@@ -28,7 +47,6 @@ class WilayahController extends Controller
             'level'           => ['required', Rule::in(array_keys(Wilayah::LEVEL))],
             'parent_id'       => [Rule::requiredIf(fn () => (int) $request->level !== 1), 'nullable', 'exists:wilayah,id_wilayah'],
             'jumlah_penduduk' => ['required', 'integer', 'min:0'],
-            // Ganti 'nullable' jadi 'required' kalau Acceptance Criteria mewajibkan semua kolom
             'latitude'        => ['nullable', 'numeric', 'between:-90,90'],
             'longitude'       => ['nullable', 'numeric', 'between:-180,180'],
         ], [
@@ -42,15 +60,12 @@ class WilayahController extends Controller
             'jumlah_penduduk.required' => 'Jumlah penduduk wajib diisi.',
             'jumlah_penduduk.integer'  => 'Jumlah penduduk harus berupa angka.',
             'jumlah_penduduk.min'      => 'Jumlah penduduk tidak boleh negatif.',
-            'latitude.required'        => 'Latitude wajib diisi.',
             'latitude.numeric'         => 'Latitude harus berupa angka.',
             'latitude.between'         => 'Latitude harus antara -90 dan 90.',
-            'longitude.required'       => 'Longitude wajib diisi.',
             'longitude.numeric'        => 'Longitude harus berupa angka.',
             'longitude.between'        => 'Longitude harus antara -180 dan 180.',
         ]);
 
-        // Provinsi tidak punya induk
         if ((int) $validated['level'] === 1) {
             $validated['parent_id'] = null;
         }
@@ -58,12 +73,10 @@ class WilayahController extends Controller
         Wilayah::create($validated);
 
         return redirect()
-            ->route('wilayah.create')
+            ->route('wilayah.index')
             ->with('success', 'Wilayah berhasil ditambahkan.');
     }
 
-    // Hanya membuang pemisah ribuan kalau polanya benar (1.000 / 12.345.678).
-    // Huruf atau format aneh dibiarkan, supaya tetap kena validasi "harus angka".
     private function bersihkanAngka($nilai)
     {
         $nilai = trim((string) $nilai);
