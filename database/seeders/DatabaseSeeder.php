@@ -15,11 +15,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(RoleSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Buat user admin default jika belum ada
+        User::firstOrCreate(
+            ['email' => 'admin@bapanas.go.id'],
+            [
+                'nama' => 'Pengelola Sistem Bapanas',
+                'password' => 'admin123',
+                'id_roles' => 4, // Pengelola Sistem Bapanas
+                'id_wilayah' => null,
+                'status_akun' => 'active',
+            ]
+        );
     }
 }
