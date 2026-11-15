@@ -17,42 +17,22 @@ class KelompokSasaranSeeder extends Seeder
             JenisKelompok::firstOrCreate(['nama_jenis' => $nama]);
         }
 
-        // 2. Wilayah dari CSV (hasil Excel FSVA)
-        $lines = file(database_path('seeders/data/wilayah.csv'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $lines[0] = preg_replace('/^\xEF\xBB\xBF/', '', $lines[0]); // buang BOM kalau ada
-        $delimiter = str_contains($lines[0], ';') ? ';' : ',';
-        array_shift($lines); // lewati header
-
-        $rows = [];
-        foreach ($lines as $line) {
-            $r = str_getcsv($line, $delimiter);
-            if (count($r) >= 3) {
-                $rows[] = array_pad($r, 4, '');
-            }
+        // 2. Pakai wilayah yang sudah diisi FsvaDataSeeder (provinsi dulu, kalau tidak ada ambil 40 pertama)
+        $wilayah = Wilayah::whereNull('parent_id')->get();
+        if ($wilayah->isEmpty()) {
+            $wilayah = Wilayah::limit(40)->get();
+        }
+        if ($wilayah->isEmpty()) {
+            $this->command->warn('Tabel wilayah masih kosong. Jalankan db:seed (FsvaDataSeeder) dulu.');
+            return;
         }
 
-        // provinsi dulu (level 1), baru kab/kota (level 2)
-        foreach ($rows as [$kode, $nama, $level, $kodeParent]) {
-            if ((int) $level === 1) {
-                Wilayah::firstOrCreate(['kode_wilayah' => $kode], ['nama_wilayah' => $nama, 'level' => 1]);
-            }
-        }
-        foreach ($rows as [$kode, $nama, $level, $kodeParent]) {
-            if ((int) $level === 2) {
-                $parent = Wilayah::where('kode_wilayah', $kodeParent)->first();
-                Wilayah::firstOrCreate(
-                    ['kode_wilayah' => $kode],
-                    ['nama_wilayah' => $nama, 'level' => 2, 'parent_id' => $parent?->id_wilayah]
-                );
-            }
-        }
-
-        // 3. Data dummy kelompok sasaran per provinsi (hanya untuk testing)
+        // 3. Data dummy kelompok sasaran (hanya untuk testing tampilan)
         $idJenis = JenisKelompok::pluck('id_jenis_kelompok');
-        foreach (Wilayah::where('level', 1)->get() as $prov) {
+        foreach ($wilayah as $w) {
             foreach ($idJenis as $id) {
                 KelompokSasaran::firstOrCreate(
-                    ['id_wilayah' => $prov->id_wilayah, 'id_jenis_kelompok' => $id, 'tahun' => 2025],
+                    ['id_wilayah' => $w->getKey(), 'id_jenis_kelompok' => $id, 'tahun' => 2025],
                     ['jumlah' => rand(10000, 500000)]
                 );
             }
