@@ -1,4 +1,3 @@
-@'
 <?php
 
 namespace Database\Seeders;
@@ -129,5 +128,3 @@ class FsvaDataSeeder extends Seeder
         $this->command->info('Berhasil mengimpor 514 Kabupaten/Kota dan 13 Indikator FSVA 2025!');
     }
 }
-'@ | Set-Content -Path "database/seeders/FsvaDataSeeder.php" -Encoding UTF8
-php artisan db:seed
