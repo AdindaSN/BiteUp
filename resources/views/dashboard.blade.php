@@ -401,6 +401,21 @@
                 </div>
             </div>
 
+            <!-- AKSES CEPAT TARGET PROGRAM (PBI-014) -->
+            <div class="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h4 class="text-base font-bold text-[#29352E]">Pengelolaan Target Program Bantuan</h4>
+                    <p class="text-xs text-gray-500 mt-1">Alokasikan target kuantitatif sasaran intervensi pangan ke kelompok sasaran dan wilayah binaan.</p>
+                </div>
+                <a href="{{ route('target-program.index') }}"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#315B46] hover:bg-[#264837] shadow-sm transition whitespace-nowrap self-start sm:self-auto">
+                    <span>Kelola Target Program</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
                     <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Target Sasaran</span>

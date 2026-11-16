@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataIndikatorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\ProgramSasaranController;
 use App\Models\User;
 
 // Halaman utama
@@ -64,6 +65,25 @@ Route::middleware('auth')->group(function () {
             'latestPendingUsers'
         ));
     })->name('dashboard');
+
+    // Pengelolaan Target Program (PBI-014)
+    Route::get('/target-program', [ProgramSasaranController::class, 'index'])
+        ->name('target-program.index');
+
+    Route::middleware('role:3,4')->group(function () {
+        Route::get('/target-program/create', [ProgramSasaranController::class, 'create'])
+            ->name('target-program.create');
+
+        Route::post('/target-program', [ProgramSasaranController::class, 'store'])
+            ->name('target-program.store');
+
+        // API FSVA untuk formulir target program
+        Route::get('/target-program/api/fsva', [ProgramSasaranController::class, 'getFsvaData'])
+            ->name('target-program.api.fsva');
+
+        Route::get('/target-program/api/kelompok', [ProgramSasaranController::class, 'getKelompokByWilayah'])
+            ->name('target-program.api.kelompok');
+    });
 });
 
 // Route khusus Pengelola Sistem Bapanas (Role ID 4)
