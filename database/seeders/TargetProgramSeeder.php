@@ -74,34 +74,107 @@ class TargetProgramSeeder extends Seeder
             ]
         );
 
-        // Ambil Wilayah
-        $wilayah = Wilayah::first();
-        $wilayahId = $wilayah ? $wilayah->id_wilayah : 1;
-
-        $jk1 = DB::table('jenis_kelompok')->first();
-        $jkId = $jk1 ? $jk1->id_jenis_kelompok : 1;
-
-        // 4. Data Contoh Kelompok Sasaran
-        $ks1 = KelompokSasaran::firstOrCreate(
+        $program3 = Program::firstOrCreate(
+            ['nama_program' => 'Bantuan Pangan Non-Tunai (BPNT) 2026'],
             [
-                'id_wilayah' => $wilayahId,
-                'id_jenis_kelompok' => $jkId,
-                'tahun' => 2026,
-            ],
-            [
-                'jumlah' => 25000,
+                'id_user' => $userId,
+                'id_jenis_bantuan' => $jbId,
+                'tanggal_mulai' => '2026-01-01',
+                'tanggal_selesai' => '2026-12-31',
+                'status' => 'Berjalan',
             ]
         );
 
-        // 5. Data Contoh Target Program
-        ProgramSasaran::firstOrCreate(
-            [
-                'id_program' => $program1->id_program,
-                'id_kelompok' => $ks1->id_kelompok_sasaran,
-            ],
-            [
-                'target_jumlah' => 15000,
-            ]
-        );
+        // Ambil jenis kelompok
+        $jkRawan = DB::table('jenis_kelompok')->where('nama_jenis', 'Keluarga Rentan Rawan Pangan')->first();
+        $jkStunting = DB::table('jenis_kelompok')->where('nama_jenis', 'Balita dan Ibu Hamil Berisiko Stunting')->first();
+        $jkMiskin = DB::table('jenis_kelompok')->where('nama_jenis', 'Masyarakat Miskin Desil 1')->first();
+
+        // 4. Buat kelompok sasaran untuk beberapa wilayah yang ada (dari FSVA data)
+        $wilayahSamples = Wilayah::where('level', 2)->take(6)->get();
+
+        foreach ($wilayahSamples as $idx => $wil) {
+            $jkId = match ($idx % 3) {
+                0 => $jkRawan ? $jkRawan->id_jenis_kelompok : 1,
+                1 => $jkStunting ? $jkStunting->id_jenis_kelompok : 1,
+                2 => $jkMiskin ? $jkMiskin->id_jenis_kelompok : 1,
+            };
+
+            $ks = KelompokSasaran::firstOrCreate(
+                [
+                    'id_wilayah' => $wil->id_wilayah,
+                    'id_jenis_kelompok' => $jkId,
+                    'tahun' => 2025,
+                ],
+                [
+                    'jumlah' => rand(5000, 30000),
+                ]
+            );
+
+            // Buat target program untuk kelompok sasaran ini
+            $programForTarget = match ($idx % 3) {
+                0 => $program1,
+                1 => $program2,
+                2 => $program3,
+            };
+
+            ProgramSasaran::firstOrCreate(
+                [
+                    'id_program' => $programForTarget->id_program,
+                    'id_kelompok' => $ks->id_kelompok_sasaran,
+                ],
+                [
+                    'target_jumlah' => rand(3000, 15000),
+                ]
+            );
+        }
+
+        // 5. Buat juga kelompok sasaran tambahan dengan tahun berbeda
+        if ($wilayahSamples->count() >= 2) {
+            $wil1 = $wilayahSamples[0];
+            $wil2 = $wilayahSamples[1];
+
+            $ks2026_1 = KelompokSasaran::firstOrCreate(
+                [
+                    'id_wilayah' => $wil1->id_wilayah,
+                    'id_jenis_kelompok' => $jkRawan ? $jkRawan->id_jenis_kelompok : 1,
+                    'tahun' => 2026,
+                ],
+                [
+                    'jumlah' => 18000,
+                ]
+            );
+
+            ProgramSasaran::firstOrCreate(
+                [
+                    'id_program' => $program1->id_program,
+                    'id_kelompok' => $ks2026_1->id_kelompok_sasaran,
+                ],
+                [
+                    'target_jumlah' => 12000,
+                ]
+            );
+
+            $ks2026_2 = KelompokSasaran::firstOrCreate(
+                [
+                    'id_wilayah' => $wil2->id_wilayah,
+                    'id_jenis_kelompok' => $jkStunting ? $jkStunting->id_jenis_kelompok : 1,
+                    'tahun' => 2026,
+                ],
+                [
+                    'jumlah' => 22000,
+                ]
+            );
+
+            ProgramSasaran::firstOrCreate(
+                [
+                    'id_program' => $program2->id_program,
+                    'id_kelompok' => $ks2026_2->id_kelompok_sasaran,
+                ],
+                [
+                    'target_jumlah' => 8500,
+                ]
+            );
+        }
     }
 }

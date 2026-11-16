@@ -76,6 +76,13 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/target-program', [ProgramSasaranController::class, 'store'])
             ->name('target-program.store');
+
+        // API FSVA untuk formulir target program
+        Route::get('/target-program/api/fsva', [ProgramSasaranController::class, 'getFsvaData'])
+            ->name('target-program.api.fsva');
+
+        Route::get('/target-program/api/kelompok', [ProgramSasaranController::class, 'getKelompokByWilayah'])
+            ->name('target-program.api.kelompok');
     });
 });
 
