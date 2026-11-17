@@ -240,20 +240,16 @@
                             <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded text-emerald-200">Tahap Rilis</span>
                         </div>
 
-                        <div class="px-3 py-2 text-sm text-emerald-100/80 flex items-center justify-between rounded-xl bg-white/5 border border-white/5">
-                            <div class="flex items-center gap-3">
-                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <span>Kelompok Sasaran</span>
-                            </div>
-                            <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded text-emerald-200">Tahap Rilis</span>
-                        </div>
+                        <!-- KELOMPOK SASARAN (PBI-011) -->
+                        <a href="{{ route('kelompok-sasaran.index') }}"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('kelompok-sasaran.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span>Kelompok Sasaran</span>
+                        </a>
                     </div>
                 @endif
-
-            </nav>
-        </div>
 
         <!-- SIDEBAR BOTTOM: PROFIL SINGKAT PENGGUNA -->
         <div class="p-4 border-t border-white/10 bg-[#274837]/40">
