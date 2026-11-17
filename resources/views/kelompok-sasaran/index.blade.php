@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('title', 'Data Kelompok Sasaran')
+@section('breadcrumb', 'Kelompok Sasaran')
+@section('page_title', 'Data Kelompok Sasaran')
 
 @section('content')
 @php
@@ -13,7 +15,8 @@
     ];
 @endphp
     <style>
-        .ks-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .ks-header-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+        .ks-toolbar { display: flex; align-items: center; gap: 10px; flex: 1; margin-bottom: 0; }
         .ks-search { flex: 1; max-width: 380px; }
         .ks-search input {
             width: 100%; padding: 10px 14px 10px 38px; font-size: 14px;
@@ -49,15 +52,27 @@
     <div class="breadcrumb">Beranda &gt; Kelompok Sasaran</div>
 
     <div class="card">
-        <form method="GET" class="ks-toolbar">
-            <div class="ks-search">
-                <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari kelompok sasaran atau wilayah...">
-            </div>
-            <button type="submit" class="btn btn-primary">Cari</button>
-            @if (request('q'))
-                <a href="{{ route('kelompok-sasaran.index') }}" class="btn btn-light ks-reset">Reset</a>
+        <div class="ks-header-bar">
+            <form method="GET" class="ks-toolbar">
+                <div class="ks-search">
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari kelompok sasaran atau wilayah...">
+                </div>
+                <button type="submit" class="btn btn-primary">Cari</button>
+                @if (request('q'))
+                    <a href="{{ route('kelompok-sasaran.index') }}" class="btn btn-light ks-reset">Reset</a>
+                @endif
+            </form>
+
+            @if(in_array((int) Auth::user()->id_roles, [3, 4]))
+                <a href="{{ route('kelompok-sasaran.create') }}"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#315B46] hover:bg-[#264837] shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Tambah Kelompok Sasaran</span>
+                </a>
             @endif
-        </form>
+        </div>
 
         <div class="ks-wrap">
             <table class="ks-table">
