@@ -48,13 +48,13 @@ class DatabaseSeeder extends Seeder
         );
 
         // 4. Petugas Data Wilayah (Role ID 1)
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'wilayah@bapanas.go.id'],
             [
                 'nama' => 'Petugas Wilayah Bapanas',
-                'password' => 'password123',
+                'password' => \Illuminate\Support\Facades\Hash::make('password123'),
                 'id_roles' => 1,
-                'id_wilayah' => 1,
+                'id_wilayah' => null, // <--- Ubah jadi null agar lolos dari foreign key constraint
                 'status_akun' => 'active',
             ]
         );

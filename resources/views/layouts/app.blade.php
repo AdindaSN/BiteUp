@@ -162,6 +162,7 @@
                             Data Wilayah
                         </p>
 
+                        <!-- PBI-008: DATA INDIKATOR WILAYAH -->
                         @if(Route::has('indikator-wilayah.index'))
                             <a href="{{ route('indikator-wilayah.index') }}"
                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('indikator-wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
@@ -172,16 +173,17 @@
                             </a>
                         @endif
 
-                        <div class="px-3 py-2 text-sm text-emerald-100/80 flex items-center justify-between rounded-xl bg-white/5 border border-white/5">
-                            <div class="flex items-center gap-3">
+                        <!-- PBI-009: PRIORITAS WILAYAH -->
+                        @if(Route::has('prioritas-wilayah.index'))
+                            <a href="{{ route('prioritas-wilayah.index') }}"
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('prioritas-wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
                                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                <span>Input Data Wilayah</span>
-                            </div>
-                            <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded text-emerald-200">Tahap Rilis</span>
-                        </div>
+                                <span>Prioritas Wilayah</span>
+                            </a>
+                        @endif
                     </div>
                 @endif
 
