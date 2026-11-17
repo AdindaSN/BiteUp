@@ -14,20 +14,26 @@ class ProgramTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected $user;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Ensure roles & user exist
-        $role = Role::firstOrCreate(['nama_role' => 'Petugas Program']);
-        User::firstOrCreate(
-            ['email' => 'petugas@biteup.com'],
-            [
-                'id_roles' => $role->id_roles,
-                'nama' => 'Petugas Program',
-                'password' => bcrypt('password123'),
-            ]
-        );
+        // Setup standard roles
+        Role::firstOrCreate(['id_roles' => 1], ['nama_role' => 'Petugas Data Wilayah']);
+        Role::firstOrCreate(['id_roles' => 2], ['nama_role' => 'Pimpinan Bapanas']);
+        $role3 = Role::firstOrCreate(['id_roles' => 3], ['nama_role' => 'Petugas Program']);
+        Role::firstOrCreate(['id_roles' => 4], ['nama_role' => 'Pengelola Sistem Bapanas']);
+
+        $this->user = User::create([
+            'nama' => 'Petugas Program Test',
+            'email' => 'petugas_' . uniqid() . '@biteup.com',
+            'password' => bcrypt('password123'),
+            'id_roles' => $role3->id_roles,
+        ]);
+
+        $this->actingAs($this->user);
 
         // Ensure master data jenis bantuan exist
         JenisBantuan::firstOrCreate(['nama_bantuan' => 'Bantuan Pangan']);

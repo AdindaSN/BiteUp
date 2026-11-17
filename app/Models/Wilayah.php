@@ -35,9 +35,13 @@ class Wilayah extends Model
         return $this->hasMany(Wilayah::class, 'parent_id', 'id_wilayah');
     }
 
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'id_wilayah', 'id_wilayah');
+    }
+
     public function programs(): HasMany
     {
         return $this->hasMany(Program::class, 'id_wilayah', 'id_wilayah');
     }
 }
-

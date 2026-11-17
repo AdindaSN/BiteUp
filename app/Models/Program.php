@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Program extends Model
 {
@@ -12,6 +13,7 @@ class Program extends Model
 
     protected $table = 'program';
     protected $primaryKey = 'id_program';
+    public $timestamps = false;
 
     protected $fillable = [
         'id_user',
@@ -38,6 +40,11 @@ class Program extends Model
         ];
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id_user');
+    }
+
     public function jenisBantuan(): BelongsTo
     {
         return $this->belongsTo(JenisBantuan::class, 'id_jenis_bantuan', 'id_jenis_bantuan');
@@ -48,8 +55,13 @@ class Program extends Model
         return $this->belongsTo(Wilayah::class, 'id_wilayah', 'id_wilayah');
     }
 
-    public function user(): BelongsTo
+    public function programSasaran(): HasMany
     {
-        return $this->belongsTo(User::class, 'id_user', 'id_user');
+        return $this->hasMany(ProgramSasaran::class, 'id_program', 'id_program');
+    }
+
+    public function sasaran(): HasMany
+    {
+        return $this->hasMany(ProgramSasaran::class, 'id_program', 'id_program');
     }
 }

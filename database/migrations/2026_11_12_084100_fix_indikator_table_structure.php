@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -9,31 +8,50 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('indikator', function (Blueprint $table) {
-            $table->renameColumn('id', 'id_indikator');
-            $table->dropTimestamps();
+        // Only modify the table if it exists
+        if (Schema::hasTable('indikator')) {
+            Schema::table('indikator', function (Blueprint $table) {
+                // Rename primary key column if it exists
+                if (Schema::hasColumn('indikator', 'id')) {
+                    $table->renameColumn('id', 'id_indikator');
+                }
 
-            $table->string('kode', 50);
-            $table->string('nama_indikator', 150);
-            $table->string('dimensi', 100);
-            $table->string('satuan', 50);
-            $table->decimal('bobot', 8, 2);
-        });
+                // Remove default timestamps if they exist
+                if (Schema::hasColumn('indikator', 'created_at') && Schema::hasColumn('indikator', 'updated_at')) {
+                    $table->dropTimestamps();
+                }
+
+                // Add new columns that are missing
+                if (!Schema::hasColumn('indikator', 'kode')) {
+                    $table->string('kode', 50);
+                    $table->string('nama_indikator', 150);
+                    $table->string('dimensi', 100);
+                    $table->string('satuan', 50);
+                    $table->decimal('bobot', 8, 2);
+                }
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('indikator', function (Blueprint $table) {
-            $table->dropColumn([
-                'kode',
-                'nama_indikator',
-                'dimensi',
-                'satuan',
-                'bobot',
-            ]);
+        if (Schema::hasTable('indikator')) {
+            Schema::table('indikator', function (Blueprint $table) {
+                // Drop newly added columns
+                if (Schema::hasColumn('indikator', 'kode')) {
+                    $table->dropColumn(['kode', 'nama_indikator', 'dimensi', 'satuan', 'bobot']);
+                }
 
-            $table->renameColumn('id_indikator', 'id');
-            $table->timestamps();
-        });
+                // Rename primary key back if it was renamed
+                if (Schema::hasColumn('indikator', 'id_indikator') && !Schema::hasColumn('indikator', 'id')) {
+                    $table->renameColumn('id_indikator', 'id');
+                }
+
+                // Restore timestamps if they were removed
+                if (!Schema::hasColumn('indikator', 'created_at')) {
+                    $table->timestamps();
+                }
+            });
+        }
     }
 };

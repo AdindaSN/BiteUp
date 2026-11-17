@@ -23,4 +23,3 @@ class JenisBantuan extends Model
         return $this->hasMany(Program::class, 'id_jenis_bantuan', 'id_jenis_bantuan');
     }
 }
-

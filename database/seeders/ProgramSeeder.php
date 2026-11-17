@@ -27,14 +27,16 @@ class ProgramSeeder extends Seeder
         );
 
         // 2. Default Petugas Program User
-        $userPetugas = User::firstOrCreate(
-            ['email' => 'petugas@biteup.com'],
-            [
-                'id_roles' => $rolePetugas->id_roles,
-                'nama' => 'Petugas Program',
-                'password' => Hash::make('password123'),
-            ]
-        );
+        $userPetugas = User::where('email', 'program@bapanas.go.id')->first()
+            ?? User::firstOrCreate(
+                ['email' => 'petugas@biteup.com'],
+                [
+                    'id_roles' => $rolePetugas->id_roles,
+                    'nama' => 'Petugas Program',
+                    'password' => Hash::make('password123'),
+                    'status_akun' => 'active',
+                ]
+            );
 
         // 3. Jenis Bantuan (Kategori Program)
         $bantuanPangan = JenisBantuan::firstOrCreate(
