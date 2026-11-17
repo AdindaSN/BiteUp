@@ -5,6 +5,7 @@ use App\Http\Controllers\DataIndikatorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ProgramSasaranController;
+use App\Http\Controllers\KelompokSasaranController;
 use App\Models\User;
 use App\Http\Controllers\PrioritasWilayahController;
 
@@ -62,6 +63,13 @@ Route::middleware('auth')->group(function () {
         ));
     })->name('dashboard');
 
+<<<<<<< HEAD
+=======
+    // Pengelolaan Data Kelompok Sasaran (PBI-011)
+    Route::get('/kelompok-sasaran', [KelompokSasaranController::class, 'index'])
+        ->name('kelompok-sasaran.index');
+
+>>>>>>> main
     // Khusus Petugas Data Wilayah (Role ID 1) & Admin (Role ID 4)
     Route::middleware('role:1,4')->group(function () {
         // PBI-008: Halaman Data Indikator per Wilayah
