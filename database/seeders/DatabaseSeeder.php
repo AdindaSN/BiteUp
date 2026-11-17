@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleSeeder::class);
 
         // 2. Jalankan master wilayah agar id_wilayah 1 tersedia di database
-        $this->call(WilayahSeeder::class); // <-- BARIS INI YANG SEBELUMNYA KURANG
+        $this->call(WilayahSeeder::class);
 
         // 3. Pengelola Sistem Bapanas (Role ID 4 - Administrator)
         User::firstOrCreate(
@@ -59,7 +59,7 @@ class DatabaseSeeder extends Seeder
                 'nama' => 'Petugas Wilayah Bapanas',
                 'password' => Hash::make('password123'),
                 'id_roles' => 1,
-                'id_wilayah' => 1, // Memerlukan id_wilayah 1 yang disediakan oleh WilayahSeeder di atas
+                'id_wilayah' => 1, // Menggunakan id_wilayah 1 dari WilayahSeeder
                 'status_akun' => 'active',
             ]
         );

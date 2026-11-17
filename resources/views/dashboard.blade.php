@@ -301,12 +301,12 @@
                         </div>
                     </div>
                     <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                        {{ Auth::user()->wilayah->nama_wilayah ?? 'Wilayah Belum Ditetapkan' }}
+                        {{ Auth::user()->wilayah->nama_wilayah ?? 'Seluruh Wilayah Indonesia (FSVA Nasional)' }}
                     </span>
                 </div>
 
                 <div class="p-4 rounded-xl bg-[#F8F9FA] border border-gray-200/60 text-sm text-gray-600 leading-relaxed">
-                    Sebagai <strong>Petugas Data Wilayah</strong>, tugas Anda adalah memverifikasi serta memasukkan data indikator kerentanan pangan tahunan pada wilayah yang telah ditetapkan oleh Pengelola Sistem Bapanas.
+                    Sebagai <strong>Petugas Data Wilayah</strong>, tugas Anda adalah memverifikasi, mengelola data indikator ketahanan pangan tahunan, serta melakukan pengelompokan wilayah ke dalam 6 kategori prioritas kerentanan pangan nasional.
                 </div>
             </div>
 
@@ -314,20 +314,20 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
                     <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Indikator IKP</span>
-                    <span class="text-2xl font-bold text-[#29352E]">9 Indikator</span>
+                    <span class="text-2xl font-bold text-[#29352E]">6 Indikator</span>
                     <p class="text-xs text-gray-500 mt-2">Ketersediaan, Akses, dan Pemanfaatan Pangan.</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Klasifikasi Wilayah</span>
+                    <span class="text-2xl font-bold text-[#29352E]">6 Prioritas</span>
+                    <p class="text-xs text-gray-500 mt-2">Prioritas 1 (Sangat Rentan) s/d Prioritas 6 (Sangat Tahan).</p>
                 </div>
 
                 <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
                     <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Periode Aktif</span>
                     <span class="text-2xl font-bold text-[#29352E]">{{ date('Y') }}</span>
-                    <p class="text-xs text-gray-500 mt-2">Tahun berjalan pendataan IKP Nasional.</p>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
-                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Status Integrasi</span>
-                    <span class="text-sm font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block">Persiapan Sinkronisasi</span>
-                    <p class="text-xs text-gray-500 mt-2">Formulir input sedang diselaraskan dengan server pusat.</p>
+                    <p class="text-xs text-gray-500 mt-2">Tahun berjalan pendataan FSVA Nasional.</p>
                 </div>
             </div>
         </div>
