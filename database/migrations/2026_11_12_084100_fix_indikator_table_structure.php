@@ -9,7 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+<<<<<<< HEAD
+=======
         // Jika tabel belum ada, buat baru
+>>>>>>> main
         if (!Schema::hasTable('indikator')) {
             Schema::create('indikator', function (Blueprint $table) {
                 $table->id('id_indikator');
@@ -19,6 +22,8 @@ return new class extends Migration
                 $table->string('satuan', 50);
                 $table->decimal('bobot', 8, 2);
             });
+<<<<<<< HEAD
+=======
         } else {
             // Jika tabel sudah ada, sesuaikan kolomnya dengan aman tanpa hapus data
             if (Schema::hasColumn('indikator', 'id') && !Schema::hasColumn('indikator', 'id_indikator')) {
@@ -48,11 +53,16 @@ return new class extends Migration
                     $table->decimal('bobot', 8, 2);
                 }
             });
+>>>>>>> main
         }
     }
 
     public function down(): void
     {
+<<<<<<< HEAD
+        Schema::dropIfExists('indikator');
+=======
         // Tidak melakukan rollback otomatis agar data tetap aman.
+>>>>>>> main
     }
 };

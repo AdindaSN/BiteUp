@@ -63,10 +63,13 @@ Route::middleware('auth')->group(function () {
         ));
     })->name('dashboard');
 
+<<<<<<< HEAD
+=======
     // Pengelolaan Data Kelompok Sasaran (PBI-011)
     Route::get('/kelompok-sasaran', [KelompokSasaranController::class, 'index'])
         ->name('kelompok-sasaran.index');
 
+>>>>>>> main
     // Khusus Petugas Data Wilayah (Role ID 1) & Admin (Role ID 4)
     Route::middleware('role:1,4')->group(function () {
         // PBI-008: Halaman Data Indikator per Wilayah
