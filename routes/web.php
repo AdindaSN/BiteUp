@@ -76,6 +76,13 @@ Route::middleware('auth')->group(function () {
         ->name('target-program.index');
 
     Route::middleware('role:3,4')->group(function () {
+        // Tambah Data Kelompok Sasaran (PBI-012)
+        Route::get('/kelompok-sasaran/create', [KelompokSasaranController::class, 'create'])
+            ->name('kelompok-sasaran.create');
+
+        Route::post('/kelompok-sasaran', [KelompokSasaranController::class, 'store'])
+            ->name('kelompok-sasaran.store');
+
         Route::get('/target-program/create', [ProgramSasaranController::class, 'create'])
             ->name('target-program.create');
 
