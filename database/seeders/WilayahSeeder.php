@@ -11,7 +11,11 @@ class WilayahSeeder extends Seeder
     {
         DB::table('wilayah')->updateOrInsert(
             ['id_wilayah' => 1],
-            ['nama_wilayah' => 'Wilayah Pusat / Nasional'] // Sesuaikan nama kolom jika di tabel wilayah Anda berbeda (misal 'nama' atau 'nama_wilayah')
+            [
+                'kode_wilayah' => '00',
+                'nama_wilayah' => 'Wilayah Pusat / Nasional',
+                'level'        => 0,
+            ]
         );
     }
 }
