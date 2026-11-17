@@ -6,6 +6,7 @@ use App\Http\Controllers\DataIndikatorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ProgramSasaranController;
+use App\Http\Controllers\KelompokSasaranController;
 use App\Models\User;
 
 // Halaman utama
@@ -65,6 +66,10 @@ Route::middleware('auth')->group(function () {
             'latestPendingUsers'
         ));
     })->name('dashboard');
+
+    // Pengelolaan Data Kelompok Sasaran (PBI-011)
+    Route::get('/kelompok-sasaran', [KelompokSasaranController::class, 'index'])
+        ->name('kelompok-sasaran.index');
 
     // Pengelolaan Target Program (PBI-014)
     Route::get('/target-program', [ProgramSasaranController::class, 'index'])
