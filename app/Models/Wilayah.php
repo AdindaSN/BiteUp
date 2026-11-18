@@ -14,8 +14,8 @@ class Wilayah extends Model
     public $timestamps = false;
 
     public const LEVEL = [
-    1 => 'Provinsi',
-    2 => 'Kabupaten/Kota',
+        1 => 'Provinsi',
+        2 => 'Kabupaten/Kota',
     ];
 
     protected $fillable = [
@@ -27,6 +27,11 @@ class Wilayah extends Model
         'latitude',
         'longitude',
     ];
+
+    public function induk()
+    {
+        return $this->belongsTo(Wilayah::class, 'parent_id', 'id_wilayah');
+    }
 
     public function parent()
     {

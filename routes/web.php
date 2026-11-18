@@ -81,6 +81,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/prioritas-wilayah/proses', [PrioritasWilayahController::class, 'prosesPengelompokan'])
             ->name('prioritas-wilayah.proses');
 
+        // PBI-002: Melihat Daftar Wilayah
+        Route::get('/wilayah', [WilayahController::class, 'index'])
+            ->name('wilayah.index');
+
         // PBI-001: Menambahkan Data Wilayah
         Route::get('/wilayah/tambah', [WilayahController::class, 'create'])
             ->name('wilayah.create');
