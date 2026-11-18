@@ -5,6 +5,7 @@ use App\Http\Controllers\DataIndikatorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ProgramSasaranController;
+use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\KelompokSasaranController;
 use App\Models\User;
 use App\Http\Controllers\PrioritasWilayahController;
@@ -63,6 +64,16 @@ Route::middleware('auth')->group(function () {
             'latestPendingUsers'
         ));
     })->name('dashboard');
+
+    // Pengelolaan Program Bantuan (PBI-017)
+    Route::middleware('role:3,4')->prefix('program')->name('program.')->group(function () {
+        Route::get('/', [ProgramController::class, 'index'])->name('index');
+        Route::get('/tambah', [ProgramController::class, 'create'])->name('create');
+        Route::post('/', [ProgramController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [ProgramController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [ProgramController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ProgramController::class, 'destroy'])->name('destroy');
+    });
 
     // Pengelolaan Data Kelompok Sasaran (PBI-011)
     Route::get('/kelompok-sasaran', [KelompokSasaranController::class, 'index'])

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Wilayah extends Model
 {
@@ -28,23 +30,28 @@ class Wilayah extends Model
         'longitude',
     ];
 
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Wilayah::class, 'parent_id', 'id_wilayah');
+    }
+
     public function induk()
     {
         return $this->belongsTo(Wilayah::class, 'parent_id', 'id_wilayah');
     }
 
-    public function parent()
-    {
-        return $this->belongsTo(Wilayah::class, 'parent_id', 'id_wilayah');
-    }
-
-    public function children()
+    public function children(): HasMany
     {
         return $this->hasMany(Wilayah::class, 'parent_id', 'id_wilayah');
     }
 
-    public function users()
+    public function users(): HasMany
     {
         return $this->hasMany(User::class, 'id_wilayah', 'id_wilayah');
+    }
+
+    public function programs(): HasMany
+    {
+        return $this->hasMany(Program::class, 'id_wilayah', 'id_wilayah');
     }
 }
