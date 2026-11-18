@@ -2,20 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Wilayah extends Model
 {
+    use HasFactory;
+
     protected $table = 'wilayah';
     protected $primaryKey = 'id_wilayah';
     public $timestamps = false;
 
-    // Arti angka level (asumsi, sesuaikan dengan kesepakatan tim)
     public const LEVEL = [
-        1 => 'Provinsi',
-        2 => 'Kabupaten/Kota',
-        3 => 'Kecamatan',
-        4 => 'Desa/Kelurahan',
+    1 => 'Provinsi',
+    2 => 'Kabupaten/Kota',
     ];
 
     protected $fillable = [
@@ -27,4 +27,19 @@ class Wilayah extends Model
         'latitude',
         'longitude',
     ];
+
+    public function parent()
+    {
+        return $this->belongsTo(Wilayah::class, 'parent_id', 'id_wilayah');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Wilayah::class, 'parent_id', 'id_wilayah');
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'id_wilayah', 'id_wilayah');
+    }
 }
