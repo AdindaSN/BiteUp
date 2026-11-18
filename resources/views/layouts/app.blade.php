@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Dashboard') â€” BiteUp Ketahanan Pangan</title>
+    <title>@yield('title', 'Dashboard')  -  BiteUp Ketahanan Pangan</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -159,23 +159,11 @@
                 <!-- PBI-002: DAFTAR WILAYAH -->
                 @if(Route::has('wilayah.index'))
                     <a href="{{ route('wilayah.index') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.index') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                         </svg>
                         <span>Daftar Wilayah</span>
-                    </a>
-                @endif
-
-                <!-- PBI-001: INPUT DATA WILAYAH -->
-                @if(Route::has('wilayah.create'))
-                    <a href="{{ route('wilayah.create') }}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.create') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>Input Data Wilayah</span>
                     </a>
                 @endif
 
@@ -405,7 +393,7 @@
 
         <!-- FOOTER SEDERHANA -->
         <footer class="bg-white border-t border-gray-200/80 px-4 sm:px-6 lg:px-8 py-4 text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>&copy; {{ date('Y') }} <strong>BiteUp</strong> â€” Sistem Monitoring dan Pengelolaan Data Ketahanan Pangan Nasional.</span>
+            <span>&copy; {{ date('Y') }} <strong>BiteUp</strong>  -  Sistem Monitoring dan Pengelolaan Data Ketahanan Pangan Nasional.</span>
             <span class="text-gray-400">Badan Pangan Nasional Republik Indonesia</span>
         </footer>
 
