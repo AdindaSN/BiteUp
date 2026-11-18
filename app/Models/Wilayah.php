@@ -15,6 +15,11 @@ class Wilayah extends Model
     protected $primaryKey = 'id_wilayah';
     public $timestamps = false;
 
+    public const LEVEL = [
+        1 => 'Provinsi',
+        2 => 'Kabupaten/Kota',
+    ];
+
     protected $fillable = [
         'parent_id',
         'kode_wilayah',
@@ -26,6 +31,11 @@ class Wilayah extends Model
     ];
 
     public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Wilayah::class, 'parent_id', 'id_wilayah');
+    }
+
+    public function induk()
     {
         return $this->belongsTo(Wilayah::class, 'parent_id', 'id_wilayah');
     }
