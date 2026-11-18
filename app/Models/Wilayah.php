@@ -13,6 +13,11 @@ class Wilayah extends Model
     protected $primaryKey = 'id_wilayah';
     public $timestamps = false;
 
+    public const LEVEL = [
+    1 => 'Provinsi',
+    2 => 'Kabupaten/Kota',
+    ];
+
     protected $fillable = [
         'parent_id',
         'kode_wilayah',
