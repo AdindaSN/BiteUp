@@ -4,24 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class WilayahController extends Controller
 {
-    // Daftar wilayah, dengan pencarian nama dan filter jenis
     public function index(Request $request)
     {
-        $query = Wilayah::with('induk');
+        $query = Wilayah::query();
 
         if ($request->filled('cari')) {
-            $query->where('nama_wilayah', 'like', '%' . $request->cari . '%');
+            $keyword = $request->cari;
+            $query->where('provinsi', 'like', '%' . $keyword . '%')
+                  ->orWhere('kabupaten_kota', 'like', '%' . $keyword . '%')
+                  ->orWhere('kode_wilayah', 'like', '%' . $keyword . '%');
         }
 
-        if ($request->filled('level')) {
-            $query->where('level', $request->level);
-        }
-
-        $wilayah = $query->orderBy('nama_wilayah')
+        $wilayah = $query->orderBy('provinsi')
             ->paginate(10)
             ->withQueryString();
 
@@ -30,61 +27,36 @@ class WilayahController extends Controller
 
     public function create()
     {
-        $induk = Wilayah::orderBy('nama_wilayah')->get();
-
+        // Mengirim data wilayah untuk pilihan induk (jika di form menggunakan select induk)
+        $induk = Wilayah::orderBy('provinsi')->get();
         return view('wilayah.create', compact('induk'));
     }
 
     public function store(Request $request)
     {
-        $request->merge([
-            'jumlah_penduduk' => $this->bersihkanAngka($request->input('jumlah_penduduk')),
+        // Validasi input dari form web
+        $request->validate([
+            'kode_wilayah' => ['required', 'string', 'max:50', 'unique:wilayah,kode_wilayah'],
+            'nama_wilayah' => ['required', 'string', 'max:150'],
+            'level'        => ['required'],
         ]);
 
-        $validated = $request->validate([
-            'kode_wilayah'    => ['required', 'string', 'max:50', 'unique:wilayah,kode_wilayah'],
-            'nama_wilayah'    => ['required', 'string', 'max:150'],
-            'level'           => ['required', Rule::in(array_keys(Wilayah::LEVEL))],
-            'parent_id'       => [Rule::requiredIf(fn () => (int) $request->level !== 1), 'nullable', 'exists:wilayah,id_wilayah'],
-            'jumlah_penduduk' => ['required', 'integer', 'min:0'],
-            'latitude'        => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude'       => ['nullable', 'numeric', 'between:-180,180'],
-        ], [
-            'kode_wilayah.required'    => 'Kode wilayah wajib diisi.',
-            'kode_wilayah.unique'      => 'Kode wilayah sudah dipakai.',
-            'nama_wilayah.required'    => 'Nama wilayah wajib diisi.',
-            'level.required'           => 'Jenis wilayah wajib dipilih.',
-            'level.in'                 => 'Jenis wilayah tidak valid.',
-            'parent_id.required'       => 'Wilayah induk wajib dipilih.',
-            'parent_id.exists'         => 'Wilayah induk tidak ditemukan.',
-            'jumlah_penduduk.required' => 'Jumlah penduduk wajib diisi.',
-            'jumlah_penduduk.integer'  => 'Jumlah penduduk harus berupa angka.',
-            'jumlah_penduduk.min'      => 'Jumlah penduduk tidak boleh negatif.',
-            'latitude.numeric'         => 'Latitude harus berupa angka.',
-            'latitude.between'         => 'Latitude harus antara -90 dan 90.',
-            'longitude.numeric'        => 'Longitude harus berupa angka.',
-            'longitude.between'        => 'Longitude harus antara -180 dan 180.',
-        ]);
-
-        if ((int) $validated['level'] === 1) {
-            $validated['parent_id'] = null;
-        }
-
-        Wilayah::create($validated);
+        $wilayah = new Wilayah();
+        $wilayah->kode_wilayah   = $request->input('kode_wilayah');
+        
+        // Memetakan input nama_wilayah ke kolom database (provinsi & kabupaten_kota)
+        $wilayah->provinsi       = $request->input('nama_wilayah');
+        $wilayah->kabupaten_kota = $request->input('level') == 1 ? '-' : $request->input('nama_wilayah');
+        
+        // Otomatis mengisi tahun dan parent_id agar struktur database terpenuhi
+        $wilayah->tahun          = 2026;
+        $wilayah->parent_id      = $request->input('parent_id') ?: null;
+        
+        // Simpan ke database phpMyAdmin
+        $wilayah->save();
 
         return redirect()
             ->route('wilayah.index')
-            ->with('success', 'Wilayah berhasil ditambahkan.');
-    }
-
-    private function bersihkanAngka($nilai)
-    {
-        $nilai = trim((string) $nilai);
-
-        if (preg_match('/^\d{1,3}([.,]\d{3})+$/', $nilai)) {
-            return str_replace(['.', ','], '', $nilai);
-        }
-
-        return $nilai;
+            ->with('success', 'Data wilayah berhasil ditambahkan!');
     }
 }

@@ -83,22 +83,26 @@ class FsvaDataSeeder extends Seeder
             $namaKab  = trim($row[2]);
             $tahun    = (int) $row[3];
 
+            // Cek atau buat Provinsi (Level 1)
             if (!isset($provinsiMap[$namaProv])) {
-                $prov = DB::table('wilayah')->where('nama_wilayah', $namaProv)->where('level', 1)->first();
+                $prov = DB::table('wilayah')->where('provinsi', $namaProv)->whereNull('parent_id')->first();
                 $provinsiMap[$namaProv] = $prov ? $prov->id_wilayah : DB::table('wilayah')->insertGetId([
-                    'parent_id'    => null,
-                    'kode_wilayah' => substr($kodeKab, 0, 2),
-                    'nama_wilayah' => $namaProv,
-                    'level'        => 1,
+                    'parent_id'      => null,
+                    'kode_wilayah'   => substr($kodeKab, 0, 2),
+                    'provinsi'       => $namaProv,
+                    'kabupaten_kota' => '-',
+                    'tahun'          => $tahun,
                 ]);
             }
 
+            // Cek atau buat Kabupaten/Kota (Level 2)
             $kab = DB::table('wilayah')->where('kode_wilayah', $kodeKab)->first();
             $idWilayah = $kab ? $kab->id_wilayah : DB::table('wilayah')->insertGetId([
-                'parent_id'    => $provinsiMap[$namaProv],
-                'kode_wilayah' => $kodeKab,
-                'nama_wilayah' => $namaKab,
-                'level'        => 2,
+                'parent_id'      => $provinsiMap[$namaProv],
+                'kode_wilayah'   => $kodeKab,
+                'provinsi'       => $namaProv,
+                'kabupaten_kota' => $namaKab,
+                'tahun'          => $tahun,
             ]);
 
             foreach ($indikatorMap as $meta) {
