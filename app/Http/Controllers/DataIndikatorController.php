@@ -17,12 +17,14 @@ class DataIndikatorController extends Controller
         $indikatorId = $request->input('indikator_id');
 
         $daftarTahun = DataIndikator::select('tahun')->distinct()->orderBy('tahun', 'desc')->pluck('tahun');
-        $daftarProvinsi = Wilayah::where('level', 1)->orderBy('nama_wilayah')->get();
-        $daftarKabupaten = Wilayah::where('level', 2)
+        
+        // Menggunakan alias agar sesuai dengan variabel di view Blade (provinsiList, kabupatenList, indikatorList)
+        $provinsiList = Wilayah::where('level', 1)->orderBy('nama_wilayah')->get();
+        $kabupatenList = Wilayah::where('level', 2)
             ->when($provinsiId, fn($q) => $q->where('parent_id', $provinsiId))
             ->orderBy('nama_wilayah')
             ->get();
-        $daftarIndikator = Indikator::orderBy('id_indikator')->get();
+        $indikatorList = Indikator::orderBy('id_indikator')->get();
 
         $query = DataIndikator::with(['wilayah.parent', 'indikator'])
             ->where('tahun', $tahun);
@@ -42,9 +44,9 @@ class DataIndikatorController extends Controller
         return view('indikator-wilayah.index', compact(
             'dataIndikator',
             'daftarTahun',
-            'daftarProvinsi',
-            'daftarKabupaten',
-            'daftarIndikator',
+            'provinsiList',
+            'kabupatenList',
+            'indikatorList',
             'tahun',
             'provinsiId',
             'wilayahId',
