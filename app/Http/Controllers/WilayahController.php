@@ -8,21 +8,23 @@ use Illuminate\Http\Request;
 class WilayahController extends Controller
 {
     public function index(Request $request)
-    {
-        $query = Wilayah::query();
+{
+    $query = Wilayah::query();
 
-        if ($request->filled('cari')) {
-            $keyword = $request->cari;
-            $query->where('provinsi', 'like', '%' . $keyword . '%')
-                  ->orWhere('kabupaten_kota', 'like', '%' . $keyword . '%')
-                  ->orWhere('kode_wilayah', 'like', '%' . $keyword . '%');
-        }
+    // Fitur pencarian berdasarkan kode, provinsi, atau kabupaten/kota
+    if ($request->filled('cari')) {
+        $keyword = $request->cari;
+        $query->where('provinsi', 'like', '%' . $keyword . '%')
+              ->orWhere('kabupaten_kota', 'like', '%' . $keyword . '%')
+              ->orWhere('kode_wilayah', 'like', '%' . $keyword . '%');
+    }
 
-        $wilayah = $query->orderBy('provinsi')
-            ->paginate(10)
-            ->withQueryString();
+    $wilayah = $query->orderBy('provinsi')
+        ->paginate(10)
+        ->withQueryString();
 
-        return view('wilayah.index', compact('wilayah'));
+    return view('wilayah.index', compact('wilayah'));
+
     }
 
     public function create()
