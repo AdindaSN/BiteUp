@@ -5,11 +5,9 @@ use App\Http\Controllers\DataIndikatorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ProgramSasaranController;
-use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\KelompokSasaranController;
 use App\Models\User;
 use App\Http\Controllers\PrioritasWilayahController;
-use App\Http\Controllers\WilayahController;
 
 // Halaman utama
 Route::get('/', function () {
@@ -65,20 +63,13 @@ Route::middleware('auth')->group(function () {
         ));
     })->name('dashboard');
 
-    // Pengelolaan Program Bantuan (PBI-017)
-    Route::middleware('role:3,4')->prefix('program')->name('program.')->group(function () {
-        Route::get('/', [ProgramController::class, 'index'])->name('index');
-        Route::get('/tambah', [ProgramController::class, 'create'])->name('create');
-        Route::post('/', [ProgramController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [ProgramController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [ProgramController::class, 'update'])->name('update');
-        Route::delete('/{id}', [ProgramController::class, 'destroy'])->name('destroy');
-    });
-
+<<<<<<< HEAD
+=======
     // Pengelolaan Data Kelompok Sasaran (PBI-011)
     Route::get('/kelompok-sasaran', [KelompokSasaranController::class, 'index'])
         ->name('kelompok-sasaran.index');
 
+>>>>>>> main
     // Khusus Petugas Data Wilayah (Role ID 1) & Admin (Role ID 4)
     Route::middleware('role:1,4')->group(function () {
         // PBI-008: Halaman Data Indikator per Wilayah
@@ -91,17 +82,6 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/prioritas-wilayah/proses', [PrioritasWilayahController::class, 'prosesPengelompokan'])
             ->name('prioritas-wilayah.proses');
-
-        // PBI-002: Melihat Daftar Wilayah
-        Route::get('/wilayah', [WilayahController::class, 'index'])
-            ->name('wilayah.index');
-
-        // PBI-001: Menambahkan Data Wilayah
-        Route::get('/wilayah/tambah', [WilayahController::class, 'create'])
-            ->name('wilayah.create');
-
-        Route::post('/wilayah', [WilayahController::class, 'store'])
-            ->name('wilayah.store');
     });
 
     // Pengelolaan Target Program (PBI-014)
@@ -109,13 +89,6 @@ Route::middleware('auth')->group(function () {
         ->name('target-program.index');
 
     Route::middleware('role:3,4')->group(function () {
-        // Tambah Data Kelompok Sasaran (PBI-012)
-        Route::get('/kelompok-sasaran/create', [KelompokSasaranController::class, 'create'])
-            ->name('kelompok-sasaran.create');
-
-        Route::post('/kelompok-sasaran', [KelompokSasaranController::class, 'store'])
-            ->name('kelompok-sasaran.store');
-
         Route::get('/target-program/create', [ProgramSasaranController::class, 'create'])
             ->name('target-program.create');
 
