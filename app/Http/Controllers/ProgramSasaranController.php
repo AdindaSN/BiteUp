@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\DataIndikator;
-use App\Models\Indikator;
 use App\Models\JenisBantuan;
 use App\Models\JenisKelompok;
 use App\Models\KelompokSasaran;
@@ -46,7 +45,8 @@ class ProgramSasaranController extends Controller
                 $q->whereHas('program', function ($p) use ($search) {
                     $p->where('nama_program', 'like', "%{$search}%");
                 })->orWhereHas('kelompokSasaran.wilayah', function ($w) use ($search) {
-                    $w->where('nama_wilayah', 'like', "%{$search}%");
+                    $w->where('kabupaten_kota', 'like', "%{$search}%")
+                      ->orWhere('provinsi', 'like', "%{$search}%");
                 })->orWhereHas('kelompokSasaran', function ($k) use ($search) {
                     $k->where('tahun', 'like', "%{$search}%");
                 });
@@ -67,10 +67,15 @@ class ProgramSasaranController extends Controller
     {
         $this->authorizeManageTarget();
 
-        // Daftar wilayah kabupaten/kota (level 2) untuk pilihan wilayah prioritas
-        $daftarWilayah = Wilayah::where('level', 2)
-            ->orderBy('nama_wilayah')
+        // Daftar wilayah kabupaten/kota untuk pilihan wilayah prioritas
+        $daftarWilayah = Wilayah::where('kabupaten_kota', '!=', '-')
+            ->whereNotNull('kabupaten_kota')
+            ->orderBy('provinsi')
+            ->orderBy('kabupaten_kota')
             ->get();
+
+        // Daftar program bantuan yang sudah tersedia (untuk saran autocomplete)
+        $daftarProgram = Program::orderBy('nama_program')->get();
 
         // Daftar jenis kelompok sasaran
         $daftarJenisKelompok = JenisKelompok::orderBy('nama_jenis')->get();
@@ -83,6 +88,7 @@ class ProgramSasaranController extends Controller
 
         return view('target-program.create', compact(
             'daftarWilayah',
+            'daftarProgram',
             'daftarJenisKelompok',
             'daftarKelompok'
         ));
@@ -122,11 +128,9 @@ class ProgramSasaranController extends Controller
 
         // Cari atau buat program berdasarkan nama yang diketik
         $program = DB::transaction(function () use ($validated) {
-            // Cari program yang sudah ada dengan nama yang sama
             $program = Program::where('nama_program', $validated['nama_program'])->first();
 
             if (!$program) {
-                // Buat program baru dengan data default
                 $jenisBantuan = JenisBantuan::first();
 
                 $program = Program::create([
@@ -194,15 +198,18 @@ class ProgramSasaranController extends Controller
                 ];
             });
 
-        // Ambil IKP dan PKOMP jika ada
+        // Ambil IKP jika ada
         $ikpData = $dataFsva->firstWhere('kode', 'IKP');
+        $namaWilayah = ($wilayah->kabupaten_kota && $wilayah->kabupaten_kota !== '-')
+            ? $wilayah->kabupaten_kota
+            : ($wilayah->provinsi ?? '-');
 
         return response()->json([
             'wilayah' => [
                 'id' => $wilayah->id_wilayah,
-                'nama' => $wilayah->nama_wilayah,
+                'nama' => $namaWilayah,
                 'kode' => $wilayah->kode_wilayah,
-                'provinsi' => $wilayah->parent->nama_wilayah ?? '-',
+                'provinsi' => $wilayah->provinsi ?? ($wilayah->parent->provinsi ?? '-'),
             ],
             'fsva_tersedia' => $dataFsva->isNotEmpty(),
             'ikp' => $ikpData ? $ikpData['nilai'] : null,
