@@ -77,6 +77,15 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs sm:text-sm font-medium flex items-center gap-2 shadow-sm">
+            <svg class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
     <div class="card">
         <div class="ks-header-bar">
             <form method="GET" class="ks-toolbar">
@@ -173,33 +182,33 @@
     </div>
 
     <!-- MODAL KONFIRMASI HAPUS -->
-    <div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-[1px] p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100">
-            <div class="flex items-start gap-4">
-                <div class="w-10 h-10 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0 text-red-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div id="deleteModal" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); padding: 16px;">
+        <div style="background: #fff; border-radius: 16px; max-width: 440px; width: 100%; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #f3f4f6;">
+            <div style="display: flex; align-items: flex-start; gap: 14px;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: #fef2f2; border: 1px solid #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #dc2626;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                 </div>
-                <div class="flex-1">
-                    <h3 class="text-base font-bold text-[#29352E]">Konfirmasi Hapus Data</h3>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1.5 leading-relaxed">
-                        Apakah Anda yakin ingin menghapus data kelompok sasaran <strong id="deleteTargetName" class="text-gray-800"></strong>? Tindakan ini tidak dapat dibatalkan.
+                <div style="flex: 1;">
+                    <h3 style="font-size: 16px; font-weight: 700; color: #29352E; margin: 0;">Konfirmasi Hapus Data</h3>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 6px; line-height: 1.5;">
+                        Apakah Anda yakin ingin menghapus data kelompok sasaran <strong id="deleteTargetName" style="color: #1f2937;"></strong>? Tindakan ini tidak dapat dibatalkan.
                     </p>
                 </div>
             </div>
 
-            <form id="deleteForm" method="POST" action="" class="mt-6 flex items-center justify-end gap-2.5">
+            <form id="deleteForm" method="POST" action="" style="margin-top: 22px; display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
                 @csrf
                 @method('DELETE')
 
                 <button type="button"
                         onclick="closeDeleteModal()"
-                        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200 transition">
+                        style="padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; color: #374151; background: #f3f4f6; border: 1px solid #e5e7eb; cursor: pointer;">
                     Batal
                 </button>
                 <button type="submit"
-                        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 shadow-sm transition">
+                        style="padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff; background: #dc2626; border: none; cursor: pointer;">
                     Ya, Hapus
                 </button>
             </form>
@@ -211,14 +220,12 @@
             const modal = document.getElementById('deleteModal');
             document.getElementById('deleteForm').action = actionUrl;
             document.getElementById('deleteTargetName').textContent = nama + ' (Tahun ' + tahun + ')';
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.style.display = 'flex';
         }
 
         function closeDeleteModal() {
             const modal = document.getElementById('deleteModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            modal.style.display = 'none';
         }
     </script>
 @endsection
