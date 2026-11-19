@@ -2,61 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Wilayah;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class WilayahController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Wilayah::query();
-
-        if ($request->filled('cari')) {
-            $keyword = $request->cari;
-            $query->where('provinsi', 'like', '%' . $keyword . '%')
-                  ->orWhere('kabupaten_kota', 'like', '%' . $keyword . '%')
-                  ->orWhere('kode_wilayah', 'like', '%' . $keyword . '%');
-        }
-
-        $wilayah = $query->orderBy('provinsi')
-            ->paginate(10)
-            ->withQueryString();
-
-        return view('wilayah.index', compact('wilayah'));
-    }
-
-    public function create()
-    {
-        // Mengirim data wilayah untuk pilihan induk (jika di form menggunakan select induk)
-        $induk = Wilayah::orderBy('provinsi')->get();
-        return view('wilayah.create', compact('induk'));
-    }
-
-    public function store(Request $request)
-    {
-        // Validasi input dari form web
-        $request->validate([
-            'kode_wilayah' => ['required', 'string', 'max:50', 'unique:wilayah,kode_wilayah'],
-            'nama_wilayah' => ['required', 'string', 'max:150'],
-            'level'        => ['required'],
+        // Memanggil API lokal /api/wilayah
+        $response = Http::get(url('/api/wilayah'), [
+            'page' => $request->query('page', 1),
+            'cari' => $request->query('cari')
         ]);
 
-        $wilayah = new Wilayah();
-        $wilayah->kode_wilayah   = $request->input('kode_wilayah');
+        $responseData = $response->json();
         
-        // Memetakan input nama_wilayah ke kolom database (provinsi & kabupaten_kota)
-        $wilayah->provinsi       = $request->input('nama_wilayah');
-        $wilayah->kabupaten_kota = $request->input('level') == 1 ? '-' : $request->input('nama_wilayah');
-        
-        // Otomatis mengisi tahun dan parent_id agar struktur database terpenuhi
-        $wilayah->tahun          = 2026;
-        $wilayah->parent_id      = $request->input('parent_id') ?: null;
-        
-        // Simpan ke database phpMyAdmin
-        $wilayah->save();
+        $items = $responseData['data'] ?? [];
+        $meta = $responseData['meta'] ?? [
+            'current_page' => 1,
+            'per_page' => 15,
+            'total' => 0
+        ];
 
-        return redirect()
-            ->route('wilayah.index')
-            ->with('success', 'Data wilayah berhasil ditambahkan!');
+        // Membungkus kembali data array API ke LengthAwarePaginator agar Blade links() berfungsi normal
+        $wilayah = new LengthAwarePaginator(
+            collect($items),
+            $meta['total'],
+            $meta['per_page'],
+            $meta['current_page'],
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('wilayah.index', compact('wilayah'));
     }
 }
