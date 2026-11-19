@@ -2,7 +2,7 @@
 
 @section('title', 'Pengelompokan Wilayah Berdasarkan Prioritas')
 @section('breadcrumb', 'Prioritas Wilayah')
-@section('page_title', 'Prioritas Wilayah (PBI-009)')
+@section('page_title', 'Prioritas Wilayah')
 
 @section('content')
 <style>
