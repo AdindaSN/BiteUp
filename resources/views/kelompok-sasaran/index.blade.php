@@ -13,6 +13,7 @@
         'Anak Sekolah'        => 'purple',
         'Lansia'              => 'teal',
     ];
+    $canManage = in_array((int) Auth::user()->id_roles, [3, 4]);
 @endphp
     <style>
         .ks-header-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -37,6 +38,7 @@
         .ks-table tbody tr:nth-child(even) td { background: #fafcfb; }
         .ks-table tbody tr:hover td { background: #f0f7f2; }
         .ks-num { text-align: right !important; font-variant-numeric: tabular-nums; }
+        .ks-center { text-align: center !important; }
         .ks-badge { display: inline-block; padding: 3px 10px; border-radius: 999px;
                     background: #dcfce7; color: #166534; font-size: 13px; font-weight: 600; }
                     .ks-amber  { background: #fef3c7; color: #92400e; }
@@ -46,10 +48,26 @@
                     .ks-teal   { background: #ccfbf1; color: #115e59; }
                     .ks-green  { background: #dcfce7; color: #166534; }
         .ks-empty { text-align: center; padding: 36px 14px !important; color: #6b7280; }
+        .ks-btn-edit {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+            background: #fef3c7; color: #92400e; border: 1px solid #fde68a;
+            text-decoration: none; transition: all 0.15s ease;
+        }
+        .ks-btn-edit:hover { background: #fde68a; color: #78350f; }
     </style>
 
     <h1 class="page-title">Data Kelompok Sasaran</h1>
     <div class="breadcrumb">Beranda &gt; Kelompok Sasaran</div>
+
+    @if(session('success'))
+        <div class="mb-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-medium flex items-center gap-2 shadow-sm">
+            <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
 
     <div class="card">
         <div class="ks-header-bar">
@@ -63,7 +81,7 @@
                 @endif
             </form>
 
-            @if(in_array((int) Auth::user()->id_roles, [3, 4]))
+            @if($canManage)
                 <a href="{{ route('kelompok-sasaran.create') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#315B46] hover:bg-[#264837] shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,6 +101,9 @@
                         <th>Wilayah</th>
                         <th style="width:90px">Tahun</th>
                         <th class="ks-num" style="width:140px">Jumlah</th>
+                        @if($canManage)
+                            <th class="ks-center" style="width:110px">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -97,9 +118,24 @@
                             <td>{{ $item->wilayah->nama_wilayah ?? '-' }}</td>
                             <td>{{ $item->tahun }}</td>
                             <td class="ks-num">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                            @if($canManage)
+                                <td class="ks-center">
+                                    <a href="{{ route('kelompok-sasaran.edit', $item->id_kelompok_sasaran) }}"
+                                       class="ks-btn-edit">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>Edit</span>
+                                    </a>
+                                </td>
+                            @endif
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="ks-empty">Belum ada data kelompok sasaran.</td></tr>
+                        <tr>
+                            <td colspan="{{ $canManage ? 6 : 5 }}" class="ks-empty">
+                                Belum ada data kelompok sasaran.
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

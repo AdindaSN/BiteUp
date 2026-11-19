@@ -56,4 +56,35 @@ class KelompokSasaranController extends Controller
             ->route('kelompok-sasaran.index')
             ->with('success', 'Data kelompok sasaran berhasil ditambahkan.');
     }
+
+    public function edit(KelompokSasaran $kelompokSasaran)
+    {
+        $daftarWilayah = Wilayah::orderBy('nama_wilayah')->get();
+        $daftarJenis   = JenisKelompok::orderBy('nama_jenis')->get();
+
+        return view('kelompok-sasaran.edit', compact('kelompokSasaran', 'daftarWilayah', 'daftarJenis'));
+    }
+
+    public function update(Request $request, KelompokSasaran $kelompokSasaran)
+    {
+        $validated = $request->validate([
+            'id_wilayah'        => ['required', 'exists:wilayah,id_wilayah'],
+            'id_jenis_kelompok' => ['required', 'exists:jenis_kelompok,id_jenis_kelompok'],
+            'tahun'             => ['required', 'integer', 'min:2000', 'max:2100'],
+            'jumlah'            => ['required', 'integer', 'min:1'],
+        ], [
+            'id_wilayah.required'        => 'Wilayah wajib dipilih.',
+            'id_jenis_kelompok.required' => 'Jenis kelompok sasaran wajib dipilih.',
+            'tahun.required'             => 'Tahun pendataan wajib diisi.',
+            'tahun.integer'              => 'Tahun harus berupa angka yang valid.',
+            'jumlah.required'            => 'Jumlah populasi kelompok sasaran wajib diisi.',
+            'jumlah.min'                 => 'Jumlah minimal adalah 1.',
+        ]);
+
+        $kelompokSasaran->update($validated);
+
+        return redirect()
+            ->route('kelompok-sasaran.index')
+            ->with('success', 'Data kelompok sasaran berhasil diperbarui.');
+    }
 }
