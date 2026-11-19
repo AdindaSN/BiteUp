@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KelompokSasaran extends Model
 {
@@ -29,5 +30,10 @@ class KelompokSasaran extends Model
     public function jenisKelompok(): BelongsTo
     {
         return $this->belongsTo(JenisKelompok::class, 'id_jenis_kelompok', 'id_jenis_kelompok');
+    }
+
+    public function programSasaran(): HasMany
+    {
+        return $this->hasMany(ProgramSasaran::class, 'id_kelompok', 'id_kelompok_sasaran');
     }
 }
