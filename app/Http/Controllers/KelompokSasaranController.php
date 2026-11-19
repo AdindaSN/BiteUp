@@ -93,10 +93,15 @@ class KelompokSasaranController extends Controller
 
     public function destroy(KelompokSasaran $kelompokSasaran)
     {
+        if ($kelompokSasaran->programSasaran()->exists()) {
+            return redirect()
+                ->route('kelompok-sasaran.index')
+                ->with('error', 'Data kelompok sasaran tidak dapat dihapus karena masih digunakan pada data Target Program.');
+        }
+
         $kelompokSasaran->delete();
 
         return redirect()
             ->route('kelompok-sasaran.index')
             ->with('success', 'Data kelompok sasaran berhasil dihapus.');
     }
-}
