@@ -92,13 +92,296 @@
         </div>
 
     <!-- ========================================================================= -->
-    <!-- KONTEN KHUSUS ROLE ID 1: PETUGAS DATA WILAYAH                             -->
+    <!-- KONTEN KHUSUS ROLE ID 1: PETUGAS DATA WILAYAH (STATISTIK & ANALITIK DATA) -->
     <!-- ========================================================================= -->
     @elseif((int) Auth::user()->id_roles === 1)
 
-        <div class="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm">
-            <h3 class="text-base font-bold text-[#29352E] mb-2">Wilayah Penugasan</h3>
-            <p class="text-sm text-gray-600">Sebagai <strong>Petugas Data Wilayah</strong>, Anda mengelola data indikator ketahanan pangan dan pengelompokan prioritas wilayah FSVA.</p>
+        <!-- TOP BAR RINGKAS + FILTER TAHUN -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+            <div>
+                <div class="flex items-center gap-2.5">
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Statistik &amp; Monitoring Data Wilayah</h1>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Petugas Data Wilayah
+                    </span>
+                </div>
+                <p class="text-sm text-slate-500 mt-0.5">Rekapitulasi master wilayah, kelengkapan indikator FSVA, dan distribusi Indeks Ketahanan Pangan</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+                <form method="GET" action="{{ route('dashboard') }}" class="flex items-center gap-2 bg-white border border-slate-200/90 rounded-xl px-3.5 py-2 shadow-xs">
+                    <span class="text-[11px] font-semibold text-slate-400 uppercase">Periode</span>
+                    <select name="tahun" onchange="this.form.submit()"
+                            class="text-xs sm:text-sm font-semibold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+                        @foreach($daftarTahun as $thn)
+                            <option value="{{ $thn }}" {{ $tahunFilter == $thn ? 'selected' : '' }}>Tahun {{ $thn }}</option>
+                        @endforeach
+                    </select>
+                </form>
+
+                @if(Route::has('wilayah.create'))
+                    <a href="{{ route('wilayah.create') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 shadow-xs transition">
+                        <span>+ Tambah Wilayah</span>
+                    </a>
+                @endif
+
+                @if(Route::has('indikator-wilayah.index'))
+                    <a href="{{ route('indikator-wilayah.index') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2E6F40] hover:bg-[#245832] shadow-xs transition">
+                        <span>Input Indikator</span>
+                    </a>
+                @endif
+            </div>
+        </div>
+
+        <!-- 4 HERO METRIC CARDS (STATISTIK DATA WILAYAH) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <!-- CARD 1: TOTAL WILAYAH TERDATA -->
+            <a href="{{ Route::has('wilayah.index') ? route('wilayah.index') : '#' }}"
+               class="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-[#133123] via-[#224b37] to-[#35634b] text-white shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between min-h-[164px]">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-emerald-50/90">Total Wilayah Terdata</span>
+                    <span class="w-8 h-8 rounded-full bg-white text-[#1b3f2e] flex items-center justify-center shadow-xs group-hover:scale-105 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M7 7h10v10" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="my-3">
+                    <span class="text-4xl font-bold tracking-tight tabular-nums">{{ number_format($totalWilayah) }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-emerald-100/85">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-white/15 text-[10px] font-semibold text-white">
+                        {{ $totalProvinsi }} Prov
+                    </span>
+                    <span>{{ number_format($totalKabKota) }} kabupaten / kota</span>
+                </div>
+            </a>
+
+            <!-- CARD 2: KELENGKAPAN DATA INDIKATOR -->
+            <a href="{{ Route::has('indikator-wilayah.index') ? route('indikator-wilayah.index') : '#' }}"
+               class="group rounded-2xl p-6 bg-white border border-slate-200/80 hover:border-[#315B46]/40 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:shadow-sm transition-all duration-200 flex flex-col justify-between min-h-[164px]">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-slate-700">Data Indikator Terinput</span>
+                    <span class="w-8 h-8 rounded-full border border-slate-200 text-slate-700 group-hover:bg-[#315B46] group-hover:text-white group-hover:border-[#315B46] flex items-center justify-center transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M7 7h10v10" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="my-3">
+                    <span class="text-4xl font-bold tracking-tight text-slate-900 tabular-nums">{{ number_format($totalDataIndikator) }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-[10px] font-semibold text-emerald-700 border border-emerald-200/70">
+                        {{ $persenKelengkapan }}%
+                    </span>
+                    <span>Dari {{ $totalIndikator }} indikator aktif</span>
+                </div>
+            </a>
+
+            <!-- CARD 3: RATA-RATA SKOR IKP -->
+            <a href="{{ Route::has('prioritas-wilayah.index') ? route('prioritas-wilayah.index') : '#' }}"
+               class="group rounded-2xl p-6 bg-white border border-slate-200/80 hover:border-[#315B46]/40 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:shadow-sm transition-all duration-200 flex flex-col justify-between min-h-[164px]">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-slate-700">Rata-rata Skor IKP</span>
+                    <span class="w-8 h-8 rounded-full border border-slate-200 text-slate-700 group-hover:bg-[#315B46] group-hover:text-white group-hover:border-[#315B46] flex items-center justify-center transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M7 7h10v10" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="my-3">
+                    <span class="text-4xl font-bold tracking-tight text-slate-900 tabular-nums">{{ number_format($rataRataIkp, 2, ',', '.') }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-[10px] font-semibold text-slate-700">
+                        {{ $totalHasilIkp }} wilayah
+                    </span>
+                    <span>Telah diklasifikasikan</span>
+                </div>
+            </a>
+
+            <!-- CARD 4: WILAYAH PRIORITAS RENTAN (1 & 2) -->
+            <a href="{{ Route::has('prioritas-wilayah.index') ? route('prioritas-wilayah.index') : '#' }}"
+               class="group rounded-2xl p-6 bg-white border border-slate-200/80 hover:border-[#315B46]/40 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:shadow-sm transition-all duration-200 flex flex-col justify-between min-h-[164px]">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-slate-700">Wilayah Rentan (P1 &amp; P2)</span>
+                    <span class="w-8 h-8 rounded-full border border-slate-200 text-slate-700 group-hover:bg-[#315B46] group-hover:text-white group-hover:border-[#315B46] flex items-center justify-center transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M7 7h10v10" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="my-3">
+                    <span class="text-4xl font-bold tracking-tight text-slate-900 tabular-nums">{{ number_format($wilayahPrioritasTinggi) }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-rose-50 text-[10px] font-semibold text-rose-700 border border-rose-200/70">
+                        Skor &lt; 53,43
+                    </span>
+                    <span>Kategori kerentanan tinggi</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- GRID ANALITIK STATISTIK: DISTRIBUSI 6 PRIORITAS + KELENGKAPAN INDIKATOR -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <!-- DISTRIBUSI 6 KATEGORI PRIORITAS FSVA -->
+            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-6 flex flex-col justify-between">
+                <div class="flex items-start justify-between gap-3 mb-5">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">Distribusi Wilayah Berdasarkan Prioritas IKP</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Sebaran jumlah kabupaten/kota ke dalam 6 kelas kerentanan pangan FSVA ({{ $tahunFilter }})</p>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg tabular-nums">
+                        Total: {{ $totalHasilIkp }}
+                    </span>
+                </div>
+
+                <div class="space-y-4">
+                    @foreach($distribusiPrioritas as $item)
+                        <div>
+                            <div class="flex items-center justify-between text-xs mb-1.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: {{ $item['color'] }}"></span>
+                                    <span class="font-semibold text-slate-800">{{ $item['label'] }}</span>
+                                    <span class="text-[11px] text-slate-400 hidden sm:inline">({{ $item['range'] }})</span>
+                                </div>
+                                <div class="flex items-center gap-2 tabular-nums">
+                                    <span class="font-bold text-slate-900">{{ $item['count'] }} wilayah</span>
+                                    <span class="text-slate-400 w-11 text-right">{{ $item['pct'] }}%</span>
+                                </div>
+                            </div>
+                            <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500"
+                                     style="width: {{ max($item['count'] > 0 ? 4 : 0, $item['pct']) }}%; background-color: {{ $item['color'] }};">
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span class="text-slate-400">Standar klasifikasi Badan Pangan Nasional (FSVA)</span>
+                    @if(Route::has('prioritas-wilayah.index'))
+                        <a href="{{ route('prioritas-wilayah.index') }}" class="font-semibold text-[#2E6F40] hover:underline">
+                            Kelola Pengelompokan &rarr;
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            <!-- KELENGKAPAN DATA PER INDIKATOR -->
+            <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-start justify-between gap-3 mb-5">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Kelengkapan Data per Indikator</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Cakupan entri nilai indikator wilayah tahun {{ $tahunFilter }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 max-h-[310px] overflow-y-auto pr-1">
+                        @forelse($statistikIndikator as $ind)
+                            <div class="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                                <div class="flex items-center justify-between gap-2 text-xs mb-1.5">
+                                    <span class="font-semibold text-slate-800 line-clamp-1">{{ $ind->nama_indikator }}</span>
+                                    <span class="font-bold text-[#315B46] tabular-nums flex-shrink-0">
+                                        {{ $ind->jumlah_entri }}/{{ $totalWilayah }} ({{ $ind->persen }}%)
+                                    </span>
+                                </div>
+                                <div class="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#315B46] rounded-full transition-all duration-500"
+                                         style="width: {{ $ind->persen }}%;">
+                                    </div>
+                                </div>
+                                @if(!empty($ind->satuan))
+                                    <span class="text-[10px] text-slate-400 mt-1 block">Satuan: {{ $ind->satuan }}</span>
+                                @endif
+                            </div>
+                        @empty
+                            <div class="py-10 text-center text-xs text-slate-400">
+                                Belum ada master indikator yang terdaftar di sistem.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span class="text-slate-400">Total {{ $totalIndikator }} indikator terukur</span>
+                    @if(Route::has('indikator-wilayah.index'))
+                        <a href="{{ route('indikator-wilayah.index') }}" class="font-semibold text-[#2E6F40] hover:underline">
+                            Perbarui Nilai Indikator &rarr;
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL PEMERINGKATAN SKOR IKP WILAYAH TERENDAH (PRIORITAS INTERVENSI) -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Peringkat Wilayah Berdasarkan Skor IKP ({{ $tahunFilter }})</h2>
+                    <p class="text-xs text-slate-500">Daftar wilayah dengan indeks ketahanan pangan terendah yang memerlukan perhatian prioritas</p>
+                </div>
+                @if(Route::has('prioritas-wilayah.index'))
+                    <a href="{{ route('prioritas-wilayah.index') }}"
+                       class="text-xs font-semibold text-[#2E6F40] hover:text-[#1e4d2b] inline-flex items-center gap-1 transition">
+                        <span>Lihat Seluruh Wilayah</span>
+                        <span>&rarr;</span>
+                    </a>
+                @endif
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50/80 text-slate-500 border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider">
+                        <tr>
+                            <th class="py-3 px-6">Peringkat</th>
+                            <th class="py-3 px-6">Kode</th>
+                            <th class="py-3 px-6">Kabupaten / Kota</th>
+                            <th class="py-3 px-6">Provinsi</th>
+                            <th class="py-3 px-6 text-right">Skor IKP</th>
+                            <th class="py-3 px-6 text-center">Kategori Prioritas</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($hasilPrioritasTerbaru as $idx => $row)
+                            @php
+                                $prio = (int) ($row->level_prioritas ?? 6);
+                                $badgeCls = $prio <= 2 ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                    : ($prio <= 4 ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200');
+                                $kab = ($row->wilayah->kabupaten_kota && $row->wilayah->kabupaten_kota !== '-')
+                                    ? $row->wilayah->kabupaten_kota
+                                    : ($row->wilayah->provinsi ?? '-');
+                            @endphp
+                            <tr class="hover:bg-slate-50/70 transition">
+                                <td class="py-3.5 px-6 text-slate-400 font-semibold tabular-nums">#{{ $idx + 1 }}</td>
+                                <td class="py-3.5 px-6 text-xs font-mono text-slate-500">{{ $row->wilayah->kode_wilayah ?? '-' }}</td>
+                                <td class="py-3.5 px-6 font-semibold text-slate-900">{{ $kab }}</td>
+                                <td class="py-3.5 px-6 text-slate-600">{{ $row->wilayah->provinsi ?? '-' }}</td>
+                                <td class="py-3.5 px-6 text-right font-bold text-slate-900 tabular-nums">{{ number_format($row->skor_ikp, 2, ',', '.') }}</td>
+                                <td class="py-3.5 px-6 text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $badgeCls }}">
+                                        Prioritas {{ $prio }} &mdash; {{ $row->label_prioritas ?? '' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="py-10 px-6 text-center text-slate-400 text-sm">
+                                    Belum ada hasil perhitungan skor IKP untuk tahun {{ $tahunFilter }}. Buka menu <strong>Prioritas Wilayah</strong> dan klik <em>Proses Pengelompokan Prioritas</em>.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     <!-- ========================================================================= -->
