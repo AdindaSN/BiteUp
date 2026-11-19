@@ -29,16 +29,19 @@ class TargetProgramTest extends TestCase
         $provinsi = Wilayah::create([
             'id_wilayah' => 1,
             'kode_wilayah' => '32',
-            'nama_wilayah' => 'Jawa Barat',
-            'level' => 1,
+            'provinsi' => 'Jawa Barat',
+            'kabupaten_kota' => '-',
+            'tahun' => 2026,
+            'parent_id' => null,
         ]);
 
         $wilayah = Wilayah::create([
             'id_wilayah' => 2,
             'parent_id' => $provinsi->id_wilayah,
             'kode_wilayah' => '3201',
-            'nama_wilayah' => 'Kabupaten Bogor',
-            'level' => 2,
+            'provinsi' => 'Jawa Barat',
+            'kabupaten_kota' => 'Kabupaten Bogor',
+            'tahun' => 2026,
         ]);
 
         // Setup Users

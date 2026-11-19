@@ -55,13 +55,18 @@
                     Nama Program Bantuan <span class="text-red-500">*</span>
                 </label>
                 <input type="text"
-                       name="nama_program"
+                       name="nama_program" list="daftar-program"
                        id="nama_program"
                        value="{{ old('nama_program') }}"
                        placeholder="Ketik nama program bantuan, contoh: Program Penyaluran Beras 2026"
                        required
                        maxlength="150"
                        class="w-full text-xs font-medium border border-gray-300 rounded-xl px-4 py-3 bg-[#FCFCFA] text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#527653] focus:ring-1 focus:ring-[#527653] transition @error('nama_program') border-red-300 bg-red-50/20 @enderror">
+                <datalist id="daftar-program">
+                    @foreach($daftarProgram ?? [] as $prog)
+                        <option value="{{ $prog->nama_program }}">
+                    @endforeach
+                </datalist>
                 @error('nama_program')
                     <p class="text-xs text-red-600 font-medium mt-1.5">{{ $message }}</p>
                 @enderror
@@ -82,7 +87,7 @@
                         @foreach($daftarWilayah as $wilayah)
                             <option value="{{ $wilayah->id_wilayah }}"
                                     {{ old('id_wilayah') == $wilayah->id_wilayah ? 'selected' : '' }}>
-                                {{ $wilayah->nama_wilayah }} ({{ $wilayah->kode_wilayah }})
+                                {{ $wilayah->kabupaten_kota }} — {{ $wilayah->provinsi }} ({{ $wilayah->kode_wilayah }})
                             </option>
                         @endforeach
                     </select>
@@ -157,12 +162,12 @@
                         @foreach($daftarKelompok as $kelompok)
                             <option value="{{ $kelompok->id_kelompok_sasaran }}"
                                     data-wilayah-id="{{ $kelompok->id_wilayah }}"
-                                    data-wilayah="{{ $kelompok->wilayah->nama_wilayah ?? '-' }}"
+                                    data-wilayah="{{ ($kelompok->wilayah && $kelompok->wilayah->kabupaten_kota && $kelompok->wilayah->kabupaten_kota !== '-') ? $kelompok->wilayah->kabupaten_kota . ' (' . $kelompok->wilayah->provinsi . ')' : ($kelompok->wilayah->provinsi ?? '-') }}"
                                     data-tahun="{{ $kelompok->tahun }}"
                                     data-jenis="{{ $kelompok->jenisKelompok->nama_jenis ?? '-' }}"
                                     {{ old('id_kelompok') == $kelompok->id_kelompok_sasaran ? 'selected' : '' }}>
                                 {{ $kelompok->jenisKelompok->nama_jenis ?? 'Kelompok' }}
-                                — {{ $kelompok->wilayah->nama_wilayah ?? 'Wilayah' }}
+                                — {{ ($kelompok->wilayah && $kelompok->wilayah->kabupaten_kota && $kelompok->wilayah->kabupaten_kota !== '-') ? $kelompok->wilayah->kabupaten_kota : ($kelompok->wilayah->provinsi ?? 'Wilayah') }}
                                 (Tahun {{ $kelompok->tahun }})
                             </option>
                         @endforeach
