@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Data Indikator per Wilayah')
+@section('page_title', 'Data Indikator per Wilayah')
 
 @section('content')
 <style>
