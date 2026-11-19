@@ -105,3 +105,4 @@ class KelompokSasaranController extends Controller
             ->route('kelompok-sasaran.index')
             ->with('success', 'Data kelompok sasaran berhasil dihapus.');
     }
+}
