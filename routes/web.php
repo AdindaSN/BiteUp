@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataIndikatorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ProgramSasaranController;
 use App\Http\Controllers\KelompokSasaranController;
 use App\Models\User;
@@ -96,6 +97,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/prioritas-wilayah/proses', [PrioritasWilayahController::class, 'prosesPengelompokan'])
             ->name('prioritas-wilayah.proses');
     });
+
+    // Pengelolaan Data Program (PBI-017)
+    Route::resource('program', ProgramController::class)->except(['show']);
 
     // Pengelolaan Target Program (PBI-014)
     Route::get('/target-program', [ProgramSasaranController::class, 'index'])

@@ -29,7 +29,7 @@ class ProgramController extends Controller
                       $jb->where('nama_bantuan', 'like', "%{$search}%");
                   })
                   ->orWhereHas('wilayah', function ($w) use ($search) {
-                      $w->where('nama_wilayah', 'like', "%{$search}%");
+                      $w->where('provinsi', 'like', "%{$search}%")->orWhere('kabupaten_kota', 'like', "%{$search}%");
                   });
             });
         }
@@ -48,7 +48,7 @@ class ProgramController extends Controller
     public function create(): View
     {
         $jenisBantuan = JenisBantuan::orderBy('nama_bantuan', 'asc')->get();
-        $wilayahList = Wilayah::orderBy('nama_wilayah', 'asc')->get();
+        $wilayahList = Wilayah::orderBy('provinsi', 'asc')->get();
 
         return view('program.create', [
             'jenisBantuan' => $jenisBantuan,
@@ -109,7 +109,7 @@ class ProgramController extends Controller
     {
         $program = Program::with(['jenisBantuan', 'wilayah'])->findOrFail($id);
         $jenisBantuan = JenisBantuan::orderBy('nama_bantuan', 'asc')->get();
-        $wilayahList = Wilayah::orderBy('nama_wilayah', 'asc')->get();
+        $wilayahList = Wilayah::orderBy('provinsi', 'asc')->get();
 
         return view('program.edit', [
             'program' => $program,
