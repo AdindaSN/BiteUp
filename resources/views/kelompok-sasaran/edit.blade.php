@@ -86,7 +86,7 @@
                     @foreach($daftarWilayah as $wilayah)
                         <option value="{{ $wilayah->id_wilayah }}"
                                 {{ old('id_wilayah', $kelompokSasaran->id_wilayah) == $wilayah->id_wilayah ? 'selected' : '' }}>
-                            {{ $wilayah->nama_wilayah }} ({{ $wilayah->kode_wilayah }})
+                            {{ $wilayah->kabupaten_kota }} — {{ $wilayah->provinsi }} ({{ $wilayah->kode_wilayah }})
                         </option>
                     @endforeach
                 </select>

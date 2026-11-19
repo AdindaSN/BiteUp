@@ -15,7 +15,10 @@ class KelompokSasaranController extends Controller
             ->when($request->q, function ($query, $q) {
                 $query->where(function ($sub) use ($q) {
                     $sub->whereHas('jenisKelompok', fn ($j) => $j->where('nama_jenis', 'like', "%{$q}%"))
-                        ->orWhereHas('wilayah', fn ($w) => $w->where('nama_wilayah', 'like', "%{$q}%"));
+                        ->orWhereHas('wilayah', function ($w) use ($q) {
+                            $w->where('kabupaten_kota', 'like', "%{$q}%")
+                              ->orWhere('provinsi', 'like', "%{$q}%");
+                        });
                 });
             })
             ->orderBy('id_kelompok_sasaran', 'desc')
@@ -28,8 +31,8 @@ class KelompokSasaranController extends Controller
 
     public function create()
     {
-        $daftarWilayah = Wilayah::orderBy('nama_wilayah')->get();
-        $daftarJenis = JenisKelompok::orderBy('nama_jenis')->get();
+        $daftarWilayah = Wilayah::orderBy('kabupaten_kota')->get();
+        $daftarJenis   = JenisKelompok::orderBy('nama_jenis')->get();
 
         return view('kelompok-sasaran.create', compact('daftarWilayah', 'daftarJenis'));
     }
@@ -59,7 +62,7 @@ class KelompokSasaranController extends Controller
 
     public function edit(KelompokSasaran $kelompokSasaran)
     {
-        $daftarWilayah = Wilayah::orderBy('nama_wilayah')->get();
+        $daftarWilayah = Wilayah::orderBy('kabupaten_kota')->get();
         $daftarJenis   = JenisKelompok::orderBy('nama_jenis')->get();
 
         return view('kelompok-sasaran.edit', compact('kelompokSasaran', 'daftarWilayah', 'daftarJenis'));
@@ -86,5 +89,14 @@ class KelompokSasaranController extends Controller
         return redirect()
             ->route('kelompok-sasaran.index')
             ->with('success', 'Data kelompok sasaran berhasil diperbarui.');
+    }
+
+    public function destroy(KelompokSasaran $kelompokSasaran)
+    {
+        $kelompokSasaran->delete();
+
+        return redirect()
+            ->route('kelompok-sasaran.index')
+            ->with('success', 'Data kelompok sasaran berhasil dihapus.');
     }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\ProgramSasaranController;
 use App\Http\Controllers\KelompokSasaranController;
 use App\Models\User;
 use App\Http\Controllers\PrioritasWilayahController;
+use App\Http\Controllers\WilayahController;
 
 // Halaman utama
 Route::get('/', function () {
@@ -147,8 +148,22 @@ Route::middleware('auth')->group(function () {
             ->name('kelompok-sasaran.update');
     });
 
+    // Menghapus Data Kelompok Sasaran (PBI-014)
+    Route::middleware('role:3,4')->group(function () {
+        Route::delete('/kelompok-sasaran/{kelompokSasaran}', [KelompokSasaranController::class, 'destroy'])
+            ->name('kelompok-sasaran.destroy');
+    });
+
     // Khusus Petugas Data Wilayah (Role ID 1) & Admin (Role ID 4)
     Route::middleware('role:1,4')->group(function () {
+        // PBI-001 & PBI-002: Manajemen Data Wilayah
+        Route::get('/wilayah', [WilayahController::class, 'index'])
+            ->name('wilayah.index');
+        Route::get('/wilayah/create', [WilayahController::class, 'create'])
+            ->name('wilayah.create');
+        Route::post('/wilayah', [WilayahController::class, 'store'])
+            ->name('wilayah.store');
+
         // PBI-008: Halaman Data Indikator per Wilayah
         Route::get('/indikator-wilayah', [DataIndikatorController::class, 'index'])
             ->name('indikator-wilayah.index');
