@@ -36,9 +36,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
-    Route::get('/dashboard', function () {
+    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
-        $isAdmin = (int) $user->id_roles === 4;
+        $roleId = (int) $user->id_roles;
+        $isAdmin = $roleId === 4;
 
         $pendingUsersCount = 0;
         $activeUsersCount = 0;
@@ -56,11 +57,73 @@ Route::middleware('auth')->group(function () {
                 ->get();
         }
 
+        $tahunFilter = (int) $request->input('tahun', date('Y'));
+        $indikatorFilter = $request->input('indikator', 'Indeks Ketahanan Pangan');
+
+        $daftarTahun = \App\Models\HasilIkp::select('tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun')
+            ->toArray();
+        if (empty($daftarTahun)) {
+            $daftarTahun = [(int) date('Y'), (int) date('Y') - 1];
+        }
+        if (!in_array($tahunFilter, $daftarTahun, true)) {
+            $tahunFilter = $daftarTahun[0];
+        }
+
+        $totalProgram = \App\Models\Program::count();
+        $programAktif = \App\Models\Program::whereIn('status', ['Aktif', 'Berjalan'])->count();
+        $totalTargetPenerima = (int) \App\Models\ProgramSasaran::sum('target_jumlah');
+        $totalAlokasiTarget = \App\Models\ProgramSasaran::count();
+        $totalKelompokSasaran = \App\Models\KelompokSasaran::count();
+        $totalPendudukRentan = (int) \App\Models\KelompokSasaran::sum('jumlah');
+        $wilayahTerjangkau = \App\Models\KelompokSasaran::whereHas('programSasaran')
+            ->distinct('id_wilayah')
+            ->count('id_wilayah');
+
+        $hasilIkpRows = \App\Models\HasilIkp::with('wilayah')
+            ->where('tahun', $tahunFilter)
+            ->get();
+
+        $petaProvinsi = [];
+        foreach ($hasilIkpRows->groupBy(fn($r) => strtoupper(trim($r->wilayah->provinsi ?? ''))) as $provName => $items) {
+            if ($provName === '') continue;
+            $avgSkor = round($items->avg('skor_ikp'), 2);
+            $kategori = $avgSkor < 50 ? 'Sangat Prioritas'
+                : ($avgSkor < 62 ? 'Prioritas'
+                : ($avgSkor < 72 ? 'Cukup' : 'Tidak Prioritas'));
+
+            $petaProvinsi[$provName] = [
+                'provinsi' => $items->first()->wilayah->provinsi,
+                'skor_ikp' => $avgSkor,
+                'kategori' => $kategori,
+                'jumlah_wilayah' => $items->count(),
+            ];
+        }
+
+        $targetProgramTerbaru = \App\Models\ProgramSasaran::with(['program.jenisBantuan', 'kelompokSasaran.wilayah', 'kelompokSasaran.jenisKelompok'])
+            ->orderBy('id_program_sasaran', 'desc')
+            ->take(6)
+            ->get();
+
         return view('dashboard', compact(
             'pendingUsersCount',
             'activeUsersCount',
             'rejectedUsersCount',
-            'latestPendingUsers'
+            'latestPendingUsers',
+            'tahunFilter',
+            'indikatorFilter',
+            'daftarTahun',
+            'totalProgram',
+            'programAktif',
+            'totalTargetPenerima',
+            'totalAlokasiTarget',
+            'totalKelompokSasaran',
+            'totalPendudukRentan',
+            'wilayahTerjangkau',
+            'petaProvinsi',
+            'targetProgramTerbaru'
         ));
     })->name('dashboard');
 

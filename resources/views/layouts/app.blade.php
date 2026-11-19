@@ -96,7 +96,6 @@
                     </svg>
                 </button>
             </div>
-
             <!-- NAVIGATION LINKS -->
             <nav class="p-4 space-y-6 flex-1">
 
@@ -117,14 +116,95 @@
                 </div>
 
                 @auth
+                    @php
+                        $userRole = (int) Auth::user()->id_roles;
+                    @endphp
+
+                    <!-- MENU WILAYAH & FSVA (ROLE 1: PETUGAS WILAYAH & ROLE 4: ADMIN) -->
+                    @if(in_array($userRole, [1, 4], true))
+                        <div class="space-y-1 pt-2 border-t border-white/10">
+                            <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
+                                Wilayah & Ketahanan Pangan
+                            </p>
+
+                            @if(Route::has('wilayah.index'))
+                                <a href="{{ route('wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.888V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Manajemen Wilayah</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('indikator-wilayah.index'))
+                                <a href="{{ route('indikator-wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('indikator-wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                    <span>Indikator Wilayah</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('prioritas-wilayah.index'))
+                                <a href="{{ route('prioritas-wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('prioritas-wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                                    </svg>
+                                    <span>Prioritas Wilayah</span>
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+
+                    <!-- MENU PROGRAM & KELOMPOK SASARAN (ROLE 3: PETUGAS PROGRAM & ROLE 4: ADMIN) -->
+                    @if(in_array($userRole, [3, 4], true))
+                        <div class="space-y-1 pt-2 border-t border-white/10">
+                            <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
+                                Program & Sasaran
+                            </p>
+
+                            @if(Route::has('kelompok-sasaran.index'))
+                                <a href="{{ route('kelompok-sasaran.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('kelompok-sasaran.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>Kelompok Sasaran</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('program.index'))
+                                <a href="{{ route('program.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('program.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                    <span>Data Program</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('target-program.index'))
+                                <a href="{{ route('target-program.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('target-program.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                    <span>Target Program</span>
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+
                     <!-- MENU KHUSUS ROLE ID 4: PENGELOLA SISTEM BAPANAS (ADMINISTRATOR) -->
-                    @if((int) Auth::user()->id_roles === 4)
+                    @if($userRole === 4)
                         <div class="space-y-1 pt-2 border-t border-white/10">
                             <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
                                 Administrasi Sistem
                             </p>
 
-                            <!-- MANAJEMEN PENGGUNA -->
                             <a href="{{ route('admin.pengguna.index') }}"
                                class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('admin.pengguna.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
                                 <div class="flex items-center gap-3">
@@ -144,50 +224,56 @@
                                     </span>
                                 @endif
                             </a>
-
-                            <!-- DATA PROGRAM (PBI-017) -->
-                            <a href="{{ route('program.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('program.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
-                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                </svg>
-                                <span>Data Program</span>
-                            </a>
-
-                            <!-- TARGET PROGRAM (PBI-014) -->
-                            <a href="{{ route('target-program.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('target-program.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
-                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                </svg>
-                                <span>Target Program</span>
-                            </a>
-                        </div>
-                    @endif
-
-                    <!-- PBI-002: DAFTAR WILAYAH -->
-                    @if(Route::has('wilayah.index'))
-                        <div class="space-y-1 pt-2 border-t border-white/10">
-                            <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
-                                Wilayah & Ketahanan Pangan
-                            </p>
-                            <a href="{{ route('wilayah.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
-                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.888V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Manajemen Wilayah</span>
-                            </a>
                         </div>
                     @endif
                 @endauth
             </nav>
         </div>
     </aside>
-
     <!-- MAIN CONTENT CONTAINER -->
-    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        @yield('content')
+    <main class="flex-1 flex flex-col min-w-0 overflow-x-hidden bg-[#F8FAFC]">
+        <!-- TOPBAR RINGKAS -->
+        <header class="h-16 bg-white/80 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-10 flex items-center justify-between sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button id="openSidebarBtn" type="button" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <span>BiteUp</span>
+                    <span>/</span>
+                    <span class="font-semibold text-slate-700">@yield('breadcrumb', 'Dashboard')</span>
+                </div>
+            </div>
+
+            @auth
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-[#315B46] text-white flex items-center justify-center text-xs font-bold">
+                            {{ strtoupper(substr(Auth::user()->nama, 0, 1)) }}
+                        </div>
+                        <div class="leading-tight">
+                            <span class="text-xs font-semibold text-slate-800 block">{{ Auth::user()->nama }}</span>
+                            <span class="text-[11px] text-slate-400">{{ Auth::user()->role->nama_role ?? 'Petugas' }}</span>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('logout') }}" method="POST" class="m-0">
+                        @csrf
+                        <button type="submit"
+                                class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200/80 transition">
+                            Keluar
+                        </button>
+                    </form>
+                </div>
+            @endauth
+        </header>
+
+        <!-- AREA KONTEN DENGAN PADDING LEGA -->
+        <div class="flex-1 px-6 py-7 lg:px-10 lg:py-8 max-w-[1440px] w-full mx-auto">
+            @yield('content')
+        </div>
     </main>
 
 </body>
