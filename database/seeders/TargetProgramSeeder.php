@@ -90,8 +90,8 @@ class TargetProgramSeeder extends Seeder
         $jkStunting = DB::table('jenis_kelompok')->where('nama_jenis', 'Balita dan Ibu Hamil Berisiko Stunting')->first();
         $jkMiskin = DB::table('jenis_kelompok')->where('nama_jenis', 'Masyarakat Miskin Desil 1')->first();
 
-        // 4. Buat kelompok sasaran untuk beberapa wilayah yang ada (dari FSVA data)
-        $wilayahSamples = Wilayah::where('level', 2)->take(6)->get();
+        // 4. Buat kelompok sasaran untuk beberapa wilayah kabupaten/kota yang ada
+        $wilayahSamples = Wilayah::where('kabupaten_kota', '!=', '-')->take(6)->get();
 
         foreach ($wilayahSamples as $idx => $wil) {
             $jkId = match ($idx % 3) {
