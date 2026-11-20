@@ -322,6 +322,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/target-program', [ProgramSasaranController::class, 'store'])
             ->name('target-program.store');
 
+        Route::get('/target-program/{id}/edit', [ProgramSasaranController::class, 'edit'])
+            ->name('target-program.edit');
+
+        Route::put('/target-program/{id}', [ProgramSasaranController::class, 'update'])
+            ->name('target-program.update');
+
         // API FSVA untuk formulir target program
         Route::get('/target-program/api/fsva', [ProgramSasaranController::class, 'getFsvaData'])
             ->name('target-program.api.fsva');

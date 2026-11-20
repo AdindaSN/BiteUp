@@ -7,6 +7,49 @@
 @section('content')
 <div class="space-y-6">
 
+    @if(session('success'))
+        <div id="success-popup-modal"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#091a12]/45 backdrop-blur-xs transition-opacity duration-300"
+             onclick="if(event.target === this) closeSuccessPopup()">
+            <div id="success-popup-card"
+                 class="bg-white rounded-3xl max-w-sm w-full p-7 text-center border border-emerald-100 shadow-2xl transform transition-all duration-300 scale-100">
+                <div class="w-16 h-16 rounded-full bg-emerald-50 border-4 border-emerald-100 text-[#2E6F40] mx-auto flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-extrabold text-slate-900">Berhasil!</h3>
+                <p class="text-sm text-slate-600 mt-1.5 leading-relaxed">
+                    {{ session('success') }}
+                </p>
+                <div class="mt-6">
+                    <button type="button"
+                            onclick="closeSuccessPopup()"
+                            class="w-full py-2.5 px-5 rounded-full bg-[#133123] hover:bg-[#2E6F40] text-white text-xs sm:text-sm font-bold transition shadow-sm">
+                        Oke, Mengerti
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function closeSuccessPopup() {
+                const modal = document.getElementById('success-popup-modal');
+                const card = document.getElementById('success-popup-card');
+                if (!modal) return;
+                modal.classList.add('opacity-0');
+                if (card) card.classList.add('scale-95');
+                setTimeout(() => modal.remove(), 250);
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeSuccessPopup();
+            });
+
+            setTimeout(closeSuccessPopup, 3500);
+        </script>
+    @endif
+
     <!-- HEADER & AKSI UTAMA -->
     <div class="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -73,6 +116,9 @@
                         <th class="py-3.5 px-6 text-center">Periode</th>
                         <th class="py-3.5 px-6">Kelompok Sasaran</th>
                         <th class="py-3.5 px-6 text-right">Jumlah Target</th>
+                        @if(in_array((int) Auth::user()->id_roles, [3, 4], true))
+                            <th class="py-3.5 px-6 text-center">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -140,10 +186,22 @@
                                 </span>
                                 <span class="text-xs text-gray-400 ml-1 font-medium">Penerima</span>
                             </td>
+
+                            @if(in_array((int) Auth::user()->id_roles, [3, 4], true))
+                                <td class="py-4 px-6 text-center">
+                                    <a href="{{ route('target-program.edit', $target->id_program_sasaran) }}"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#133123] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>Ubah</span>
+                                    </a>
+                                </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-14 px-6 text-center">
+                            <td colspan="{{ in_array((int) Auth::user()->id_roles, [3, 4], true) ? 7 : 6 }}" class="py-14 px-6 text-center">
                                 <div class="max-w-sm mx-auto flex flex-col items-center">
                                     <div class="w-14 h-14 rounded-2xl bg-gray-100 text-gray-400 flex items-center justify-center mb-3">
                                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">

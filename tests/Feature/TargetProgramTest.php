@@ -294,4 +294,93 @@ class TargetProgramTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonCount(1);
     }
+
+    public function test_petugas_program_can_view_edit_target_program_page(): void
+    {
+        $data = $this->setupInitialData();
+        $target = ProgramSasaran::create([
+            'id_program' => $data['program']->id_program,
+            'id_kelompok' => KelompokSasaran::first()->id_kelompok_sasaran,
+            'target_jumlah' => 500,
+        ]);
+
+        $response = $this->actingAs($data['petugasProgram'])
+            ->get(route('target-program.edit', $target->id_program_sasaran));
+
+        $response->assertStatus(200);
+        $response->assertSee('Ubah Alokasi Target Program');
+    }
+
+    public function test_unauthorized_role_cannot_access_edit_or_update_target_program(): void
+    {
+        $data = $this->setupInitialData();
+        $target = ProgramSasaran::create([
+            'id_program' => $data['program']->id_program,
+            'id_kelompok' => KelompokSasaran::first()->id_kelompok_sasaran,
+            'target_jumlah' => 500,
+        ]);
+
+        $this->actingAs($data['petugasWilayah'])
+            ->get(route('target-program.edit', $target->id_program_sasaran))
+            ->assertStatus(403);
+
+        $this->actingAs($data['petugasWilayah'])
+            ->put(route('target-program.update', $target->id_program_sasaran), [
+                'nama_program' => 'Program Uji',
+                'id_kelompok' => $target->id_kelompok,
+                'target_jumlah' => 999,
+            ])
+            ->assertStatus(403);
+    }
+
+    public function test_validation_fails_when_updating_with_invalid_target_jumlah(): void
+    {
+        $data = $this->setupInitialData();
+        $target = ProgramSasaran::create([
+            'id_program' => $data['program']->id_program,
+            'id_kelompok' => KelompokSasaran::first()->id_kelompok_sasaran,
+            'target_jumlah' => 500,
+        ]);
+
+        $response = $this->actingAs($data['petugasProgram'])
+            ->from(route('target-program.edit', $target->id_program_sasaran))
+            ->put(route('target-program.update', $target->id_program_sasaran), [
+                'nama_program' => $data['program']->nama_program,
+                'id_kelompok' => $target->id_kelompok,
+                'target_jumlah' => 0,
+            ]);
+
+        $response->assertRedirect(route('target-program.edit', $target->id_program_sasaran));
+        $response->assertSessionHasErrors(['target_jumlah']);
+    }
+
+    public function test_successfully_updates_target_program_and_displays_latest_data(): void
+    {
+        $data = $this->setupInitialData();
+        $target = ProgramSasaran::create([
+            'id_program' => $data['program']->id_program,
+            'id_kelompok' => KelompokSasaran::first()->id_kelompok_sasaran,
+            'target_jumlah' => 500,
+        ]);
+
+        $response = $this->actingAs($data['petugasProgram'])
+            ->put(route('target-program.update', $target->id_program_sasaran), [
+                'nama_program' => 'Program Bantuan Pangan Terpadu Update',
+                'id_kelompok' => $target->id_kelompok,
+                'target_jumlah' => 12500,
+            ]);
+
+        $response->assertRedirect(route('target-program.index'));
+        $response->assertSessionHas('success', 'Data target program berhasil diperbarui.');
+
+        $this->assertDatabaseHas('program_sasaran', [
+            'id_program_sasaran' => $target->id_program_sasaran,
+            'id_kelompok' => $target->id_kelompok,
+            'target_jumlah' => 12500,
+        ]);
+
+        $indexResponse = $this->actingAs($data['petugasProgram'])->get(route('target-program.index'));
+        $indexResponse->assertSee('Program Bantuan Pangan Terpadu Update');
+        $indexResponse->assertSee('12.500');
+    }
 }
