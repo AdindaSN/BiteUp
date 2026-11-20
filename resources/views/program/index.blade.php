@@ -115,7 +115,7 @@
                         <th scope="col" class="py-3.5 px-4">Rencana Pelaksanaan</th>
                         <th scope="col" class="py-3.5 px-6">Deskripsi</th>
                         <th scope="col" class="py-3.5 px-4 text-center">Status</th>
-                        <th scope="col" class="py-3.5 px-4 text-center w-28">Aksi</th>
+                        <th scope="col" class="py-3.5 px-4 text-center w-32">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -125,7 +125,9 @@
                                 {{ $index + 1 }}
                             </td>
                             <td class="py-3.5 px-4 font-semibold text-gray-800 whitespace-nowrap">
-                                {{ $program->nama_program }}
+                                <a href="{{ route('program.show', $program->id_program) }}" class="hover:text-emerald-600 transition-colors" title="Lihat detail program">
+                                    {{ $program->nama_program }}
+                                </a>
                             </td>
                             <td class="py-3.5 px-4 text-gray-600 whitespace-nowrap">
                                 {{ $program->jenisBantuan->nama_bantuan ?? '-' }}
@@ -172,6 +174,18 @@
                             </td>
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1.5 justify-center">
+                                    <!-- View Detail Action Icon (Emerald) -->
+                                    <a
+                                        href="{{ route('program.show', $program->id_program) }}"
+                                        class="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors"
+                                        title="Lihat Detail Program {{ $program->nama_program }}"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </a>
+
                                     <!-- Edit Action Icon (Blue) -->
                                     <a
                                         href="{{ route('program.edit', $program->id_program) }}"
@@ -182,6 +196,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </a>
+
                                     <!-- Delete Action Icon (Red) -->
                                     <button
                                         type="button"
