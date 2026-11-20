@@ -146,8 +146,11 @@
                         >
                             <option value="">-- Pilih Wilayah Sasaran --</option>
                             @foreach ($wilayahList as $wil)
+                                @php
+                                    $namaWilayah = $wil->nama_wilayah ?? $wil->kabupaten_kota ?? $wil->provinsi ?? 'Wilayah';
+                                @endphp
                                 <option value="{{ $wil->id_wilayah }}" @selected(old('id_wilayah', $program->id_wilayah) == $wil->id_wilayah)>
-                                    {{ $wil->nama_wilayah }} ({{ $wil->level == 1 ? 'Provinsi' : 'Kabupaten/Kota' }})
+                                    {{ $namaWilayah }} @if(isset($wil->provinsi) && isset($wil->kabupaten_kota) && $wil->kabupaten_kota != '-')({{ $wil->kabupaten_kota }}, {{ $wil->provinsi }})@endif
                                 </option>
                             @endforeach
                         </select>
@@ -179,9 +182,9 @@
                     $tglValue = old('tanggal_pelaksanaan');
                     if (!$tglValue) {
                         if ($program->tanggal_pelaksanaan) {
-                            $tglValue = $program->tanggal_pelaksanaan->format('Y-m-d');
+                            $tglValue = is_string($program->tanggal_pelaksanaan) ? $program->tanggal_pelaksanaan : $program->tanggal_pelaksanaan->format('Y-m-d');
                         } elseif ($program->tanggal_mulai) {
-                            $tglValue = $program->tanggal_mulai->format('Y-m-d');
+                            $tglValue = is_string($program->tanggal_mulai) ? $program->tanggal_mulai : $program->tanggal_mulai->format('Y-m-d');
                         }
                     }
                 @endphp
@@ -254,4 +257,3 @@
 
 </div>
 @endsection
-

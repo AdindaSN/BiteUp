@@ -39,7 +39,7 @@
     </script>
 
     <style>
-        * {
+        body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             box-sizing: border-box;
         }
@@ -76,7 +76,7 @@
 
             <!-- LOGO HEADER -->
             <div class="h-20 px-6 flex items-center justify-between border-b border-white/10">
-                                <a href="{{ route('home') }}" class="flex items-center gap-3 group" title="Ke Beranda Utama">
+                <a href="{{ route('home') }}" class="flex items-center gap-3 group" title="Ke Beranda Utama">
                     <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition">
                         <svg class="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M17 19C12.2 24.5 11.5 33.2 15.2 40.5C19.5 49 29.8 53 39.2 49.5C47.8 46.3 52.5 37.2 50.2 28.2C48.8 22.8 44.8 18.8 39.5 17.2" stroke="#5E8C3A" stroke-width="3.6" stroke-linecap="round"/>
@@ -109,6 +109,7 @@
                     </svg>
                 </button>
             </div>
+
             <!-- NAVIGATION LINKS -->
             <nav class="p-4 space-y-6 flex-1">
 
@@ -133,33 +134,33 @@
                         $userRole = (int) Auth::user()->id_roles;
                     @endphp
 
-                    <!-- MENU WILAYAH & FSVA (ROLE 1: PETUGAS WILAYAH & ROLE 4: ADMIN) -->
+                    <!-- MENU WILAYAH & FSVA -->
                     @if(in_array($userRole, [1, 4], true))
                         <div class="space-y-1 pt-2 border-t border-white/10">
                             <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
                                 Wilayah & Ketahanan Pangan
                             </p>
 
-                                                    @if(Route::has('wilayah.index'))
-                            <a href="{{ route('wilayah.index') }}"
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.*') ? 'bg-white/15 text-white shadow-xs' : 'text-emerald-100/75 hover:bg-white/10 hover:text-white' }}">
-                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M4 18h16M6 18V9m4 9V9m4 9V9m4 9V9M3 9l9-6 9 6" />
-                                </svg>
-                                <span>Daftar Wilayah</span>
-                            </a>
-                        @endif
+                            @if(Route::has('wilayah.index'))
+                                <a href="{{ route('wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.*') ? 'bg-white/15 text-white shadow-xs' : 'text-emerald-100/75 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M4 18h16M6 18V9m4 9V9m4 9V9m4 9V9M3 9l9-6 9 6" />
+                                    </svg>
+                                    <span>Daftar Wilayah</span>
+                                </a>
+                            @endif
 
-                        @if(Route::has('data-wilayah.index'))
-                            <a href="{{ route('data-wilayah.index') }}"
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('data-wilayah.*') ? 'bg-white/15 text-white shadow-xs' : 'text-emerald-100/75 hover:bg-white/10 hover:text-white' }}">
-                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span>Data Wilayah FSVA</span>
-                            </a>
-                        @endif
+                            @if(Route::has('data-wilayah.index'))
+                                <a href="{{ route('data-wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('data-wilayah.*') ? 'bg-white/15 text-white shadow-xs' : 'text-emerald-100/75 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>Data Wilayah FSVA</span>
+                                </a>
+                            @endif
 
                             @if(Route::has('indikator-wilayah.index'))
                                 <a href="{{ route('indikator-wilayah.index') }}"
@@ -183,7 +184,7 @@
                         </div>
                     @endif
 
-                    <!-- MENU PROGRAM & KELOMPOK SASARAN (ROLE 3: PETUGAS PROGRAM & ROLE 4: ADMIN) -->
+                    <!-- MENU PROGRAM & KELOMPOK SASARAN -->
                     @if(in_array($userRole, [3, 4], true))
                         <div class="space-y-1 pt-2 border-t border-white/10">
                             <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
@@ -222,7 +223,7 @@
                         </div>
                     @endif
 
-                    <!-- MENU KHUSUS ROLE ID 4: PENGELOLA SISTEM BAPANAS (ADMINISTRATOR) -->
+                    <!-- MENU ADMINISTRASI SISTEM -->
                     @if($userRole === 4)
                         <div class="space-y-1 pt-2 border-t border-white/10">
                             <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
@@ -254,9 +255,10 @@
             </nav>
         </div>
     </aside>
+
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-1 flex flex-col min-w-0 overflow-x-hidden bg-[#F8FAFC]">
-        <!-- TOPBAR RINGKAS -->
+        <!-- TOPBAR -->
         <header class="h-16 bg-white/80 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-10 flex items-center justify-between sticky top-0 z-30">
             <div class="flex items-center gap-3">
                 <button id="openSidebarBtn" type="button" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
@@ -294,7 +296,7 @@
             @endauth
         </header>
 
-        <!-- AREA KONTEN DENGAN PADDING LEGA -->
+        <!-- AREA KONTEN -->
         <div class="flex-1 px-6 py-7 lg:px-10 lg:py-8 max-w-[1440px] w-full mx-auto">
             @yield('content')
         </div>

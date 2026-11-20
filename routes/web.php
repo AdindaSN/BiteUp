@@ -289,7 +289,7 @@ Route::middleware('auth')->group(function () {
             ->name('wilayah.index');
         Route::get('/wilayah/create', [WilayahController::class, 'create'])
             ->name('wilayah.create');
-                Route::post('/wilayah', [WilayahController::class, 'store'])
+        Route::post('/wilayah', [WilayahController::class, 'store'])
             ->name('wilayah.store');
 
         // PBI-005 & PBI-006: Data Wilayah & FSVA
@@ -308,8 +308,14 @@ Route::middleware('auth')->group(function () {
             ->name('prioritas-wilayah.proses');
     });
 
-    // Pengelolaan Data Program (PBI-017)
+    // Pengelolaan Data Program (PBI-017 & PBI-018)
     Route::resource('program', ProgramController::class)->except(['show']);
+
+    // PBI-018: Route khusus eksplisit untuk Edit & Update Program Bantuan (jika dibutuhkan terpisah)
+    Route::middleware('role:3,4')->group(function () {
+        Route::get('/program/{id}/edit', [ProgramController::class, 'edit'])->name('program.edit');
+        Route::put('/program/{id}', [ProgramController::class, 'update'])->name('program.update');
+    });
 
     // Pengelolaan Target Program (PBI-014)
     Route::get('/target-program', [ProgramSasaranController::class, 'index'])
