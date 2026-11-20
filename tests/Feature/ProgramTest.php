@@ -7,12 +7,12 @@ use App\Models\Program;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Wilayah;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProgramTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     protected $user;
 
@@ -42,11 +42,11 @@ class ProgramTest extends TestCase
         // Ensure master data wilayah exist
         Wilayah::firstOrCreate(
             ['kode_wilayah' => '32'],
-            ['nama_wilayah' => 'Jawa Barat', 'level' => 1]
+            ['provinsi' => 'Jawa Barat', 'kabupaten_kota' => '-', 'tahun' => 2026]
         );
         Wilayah::firstOrCreate(
             ['kode_wilayah' => '31'],
-            ['nama_wilayah' => 'DKI Jakarta', 'level' => 1]
+            ['provinsi' => 'DKI Jakarta', 'kabupaten_kota' => '-', 'tahun' => 2026]
         );
     }
 
@@ -71,7 +71,7 @@ class ProgramTest extends TestCase
     public function test_admin_berhasil_menambahkan_program_dengan_seluruh_field_terisi(): void
     {
         $jenisBantuan = JenisBantuan::where('nama_bantuan', 'Bantuan Pangan')->first();
-        $wilayah = Wilayah::where('nama_wilayah', 'Jawa Barat')->first();
+        $wilayah = Wilayah::where('provinsi', 'Jawa Barat')->first();
 
         $payload = [
             'nama_program' => 'Program Bantuan Beras Sejahtera 2026',
@@ -92,7 +92,7 @@ class ProgramTest extends TestCase
             'nama_program' => 'Program Bantuan Beras Sejahtera 2026',
             'id_jenis_bantuan' => $jenisBantuan->id_jenis_bantuan,
             'id_wilayah' => $wilayah->id_wilayah,
-            'tanggal_pelaksanaan' => '2026-06-15',
+            'tanggal_pelaksanaan' => '2026-06-15 00:00:00',
             'deskripsi' => 'Penyaluran beras kualitas premium untuk 50.000 KK di Jawa Barat.',
             'status' => 'Aktif',
         ]);
@@ -126,7 +126,7 @@ class ProgramTest extends TestCase
     public function test_formulir_edit_menampilkan_data_sebelumnya_dengan_benar(): void
     {
         $jenisBantuan = JenisBantuan::where('nama_bantuan', 'Intervensi Gizi')->first();
-        $wilayah = Wilayah::where('nama_wilayah', 'DKI Jakarta')->first();
+        $wilayah = Wilayah::where('provinsi', 'DKI Jakarta')->first();
 
         $program = Program::create([
             'nama_program' => 'Program Gizi Balita Stunting',
@@ -172,7 +172,7 @@ class ProgramTest extends TestCase
             'nama_program' => 'Program Baru Hasil Suntingan',
             'id_jenis_bantuan' => $jenisBaru->id_jenis_bantuan,
             'id_wilayah' => $wilayahBaru->id_wilayah,
-            'tanggal_pelaksanaan' => '2026-09-10',
+            'tanggal_pelaksanaan' => '2026-09-10 00:00:00',
             'deskripsi' => 'Deskripsi yang telah diperbarui oleh Admin.',
         ];
 
@@ -191,7 +191,7 @@ class ProgramTest extends TestCase
             'nama_program' => 'Program Baru Hasil Suntingan',
             'id_jenis_bantuan' => $jenisBaru->id_jenis_bantuan,
             'id_wilayah' => $wilayahBaru->id_wilayah,
-            'tanggal_pelaksanaan' => '2026-09-10',
+            'tanggal_pelaksanaan' => '2026-09-10 00:00:00',
             'deskripsi' => 'Deskripsi yang telah diperbarui oleh Admin.',
         ]);
 

@@ -2,7 +2,7 @@
 
 @section('title', 'Tambah Data Kelompok Sasaran')
 @section('breadcrumb', 'Tambah Kelompok Sasaran')
-@section('page_title', 'Formulir Data Kelompok Sasaran')
+@section('page_title', 'Formulir Tambah Data Kelompok Sasaran')
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
@@ -23,10 +23,10 @@
 
         <div class="border-b border-gray-100 pb-5 mb-6">
             <h2 class="text-lg font-bold text-[#29352E]">
-                Tambah Data Kelompok Sasaran Baru
+                Tambah Data Kelompok Sasaran
             </h2>
             <p class="text-xs text-gray-500 mt-1">
-                Masukkan data demografi kelompok rentan pangan berdasarkan jenis kelompok, wilayah kabupaten/kota, dan tahun pendataan.
+                Lengkapi formulir di bawah ini untuk menambahkan data kelompok sasaran baru.
             </p>
         </div>
 
@@ -85,7 +85,7 @@
                     @foreach($daftarWilayah as $wilayah)
                         <option value="{{ $wilayah->id_wilayah }}"
                                 {{ old('id_wilayah') == $wilayah->id_wilayah ? 'selected' : '' }}>
-                            {{ $wilayah->nama_wilayah }} ({{ $wilayah->kode_wilayah }})
+                            {{ $wilayah->kabupaten_kota ? $wilayah->kabupaten_kota . ' — ' . $wilayah->provinsi : $wilayah->provinsi }} ({{ $wilayah->kode_wilayah }})
                         </option>
                     @endforeach
                 </select>

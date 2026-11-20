@@ -1,154 +1,135 @@
 @extends('layouts.app')
 
 @section('title', 'Data Wilayah')
-@section('breadcrumb', 'Wilayah')
-@section('page_title', 'Data Wilayah')
 
 @section('content')
-<div class="space-y-6">
+<div class="w-full space-y-6">
 
-    <!-- HEADER & TOMBOL TAMBAH -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <nav class="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                <a href="{{ route('dashboard') }}" class="hover:text-[#315B46] transition">Beranda</a>
-                <span>&rsaquo;</span>
-                <span class="font-semibold text-[#315B46]">Wilayah</span>
-            </nav>
-            <p class="text-sm text-gray-500">
-                Daftar seluruh wilayah administratif provinsi dan kabupaten/kota yang terdaftar dalam sistem.
-            </p>
+    <!-- NOTIFIKASI SUKSES -->
+    @if(request()->has('sukses') || session('success'))
+        <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium flex items-center justify-between">
+            <span>{{ session('success') ?? 'Wilayah berhasil ditambahkan!' }}</span>
+            <a href="{{ route('wilayah.index') }}" class="text-xs font-semibold text-emerald-700 hover:underline px-2 py-1 rounded">Tutup</a>
         </div>
+    @endif
 
+    <!-- BREADCRUMB & HEADER SECTION -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <nav class="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
+                <a href="{{ route('dashboard') }}" class="hover:text-slate-600 transition">Beranda</a>
+                <span>&rsaquo;</span>
+                <span class="font-semibold text-slate-700">Wilayah</span>
+            </nav>
+            <h1 class="text-2xl font-bold text-slate-900">Data Wilayah</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Daftar seluruh wilayah administratif provinsi dan kabupaten/kota yang terdaftar dalam sistem.</p>
+        </div>
         @if(Route::has('wilayah.create'))
-            <a href="{{ route('wilayah.create') }}"
-               class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#315B46] hover:bg-[#274837] shadow-sm transition w-fit">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Tambah Wilayah</span>
-            </a>
+            <div>
+                <a href="{{ route('wilayah.create') }}"
+                   class="inline-flex items-center gap-2 bg-[#315B46] hover:bg-[#274837] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-xs">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Tambah Wilayah</span>
+                </a>
+            </div>
         @endif
     </div>
 
-    <!-- CARD UTAMA -->
-    <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-
-        <!-- TOOLBAR PENCARIAN & FILTER -->
-        <div class="p-5 sm:p-6 bg-[#f4f7f4] border-b border-gray-200/80">
-            <form action="{{ route('wilayah.index') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
-
-                <!-- CARI NAMA WILAYAH -->
-                <div class="sm:col-span-6">
-                    <label for="cari" class="block text-xs font-semibold uppercase tracking-wider text-[#527653] mb-1.5">
-                        Cari Nama Wilayah
-                    </label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-3.5 flex items-center text-gray-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </span>
-                        <input type="text"
-                               id="cari"
-                               name="cari"
-                               value="{{ request('cari') }}"
-                               placeholder="Ketik nama provinsi atau kabupaten/kota..."
-                               class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-300 bg-white text-[#29352E] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#527653]/30 focus:border-[#315B46] transition">
-                    </div>
+    <!-- SEARCH & FILTER BAR -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+        <form action="{{ route('wilayah.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <div class="md:col-span-6">
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Cari Nama Wilayah</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </span>
+                    <input type="text"
+                           name="cari"
+                           value="{{ request('cari') }}"
+                           placeholder="Ketik nama provinsi atau kabupaten/kota..."
+                           class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#315B46] transition">
                 </div>
+            </div>
 
-                <!-- FILTER JENIS WILAYAH -->
-                <div class="sm:col-span-3">
-                    <label for="level" class="block text-xs font-semibold uppercase tracking-wider text-[#527653] mb-1.5">
-                        Jenis Wilayah
-                    </label>
-                    <select id="level"
-                            name="level"
-                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-300 bg-white text-[#29352E] focus:outline-none focus:ring-2 focus:ring-[#527653]/30 focus:border-[#315B46] transition">
-                        <option value="">Semua Jenis</option>
-                        @foreach (\App\Models\Wilayah::LEVEL as $angka => $label)
-                            <option value="{{ $angka }}" @selected((string) request('level') === (string) $angka)>
-                                {{ $label }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="md:col-span-3">
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Jenis Wilayah</label>
+                <select name="jenis"
+                        class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:border-[#315B46] transition">
+                    <option value="" {{ request('jenis') === '' || !request()->filled('jenis') ? 'selected' : '' }}>Semua Jenis</option>
+                    <option value="provinsi" {{ request('jenis') === 'provinsi' ? 'selected' : '' }}>Provinsi</option>
+                    <option value="kabupaten_kota" {{ request('jenis') === 'kabupaten_kota' ? 'selected' : '' }}>Kabupaten/Kota</option>
+                </select>
+            </div>
 
-                <!-- TOMBOL TERAPKAN & RESET -->
-                <div class="sm:col-span-3 flex items-center gap-2">
-                    <button type="submit"
-                            class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#315B46] hover:bg-[#274837] shadow-sm transition">
-                        <span>Terapkan</span>
-                    </button>
+            <div class="md:col-span-3 flex items-center gap-2">
+                <button type="submit"
+                        class="flex-1 bg-[#315B46] hover:bg-[#274837] text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition">
+                    Terapkan
+                </button>
+                <a href="{{ route('wilayah.index') }}"
+                   class="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl text-sm font-medium transition">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
 
-                    <a href="{{ route('wilayah.index') }}"
-                       class="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 border border-gray-300 transition text-center">
-                        Reset
-                    </a>
-                </div>
-
-            </form>
-        </div>
-
-        <!-- TABEL DATA WILAYAH -->
+    <!-- TABEL DATA WILAYAH -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50/80 border-b border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                        <th class="py-3.5 px-5 w-16">No</th>
-                        <th class="py-3.5 px-5">Nama Wilayah</th>
-                        <th class="py-3.5 px-5">Jenis</th>
-                        <th class="py-3.5 px-5">Wilayah Induk</th>
-                        <th class="py-3.5 px-5 text-right">Jumlah Penduduk</th>
+                    <tr class="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/70">
+                        <th class="py-3.5 px-6 w-16">No</th>
+                        <th class="py-3.5 px-6">Nama Wilayah</th>
+                        <th class="py-3.5 px-6">Jenis</th>
+                        <th class="py-3.5 px-6">Wilayah Induk</th>
+                        <th class="py-3.5 px-6 text-right">Jumlah Penduduk</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 text-sm">
-                    @forelse ($wilayah as $w)
-                        <tr class="hover:bg-[#f4f7f4]/60 transition">
-                            <td class="py-3.5 px-5 text-gray-500 font-medium">
-                                {{ $wilayah->firstItem() + $loop->index }}
+                <tbody class="divide-y divide-slate-100 text-sm text-slate-800">
+                    @forelse($wilayah as $index => $item)
+                        @php
+                            $isProvinsi = empty($item->kabupaten_kota) || $item->kabupaten_kota === '-';
+                            $namaUtama = $isProvinsi ? $item->provinsi : $item->kabupaten_kota;
+                            $wilayahInduk = $isProvinsi ? '-' : ($item->provinsi ?? '-');
+                            $penduduk = (int) ($item->jumlah_penduduk ?? 0);
+                        @endphp
+                        <tr class="hover:bg-slate-50/60 transition">
+                            <td class="py-4 px-6 text-slate-400 font-medium tabular-nums">
+                                {{ $wilayah->firstItem() + $index }}
                             </td>
-                            <td class="py-3.5 px-5">
-                                <div class="font-semibold text-[#29352E]">{{ $w->nama_wilayah }}</div>
-                                @if(!empty($w->kode_wilayah))
-                                    <div class="text-xs text-gray-400 font-mono mt-0.5">Kode: {{ $w->kode_wilayah }}</div>
-                                @endif
+                            <td class="py-4 px-6">
+                                <div class="font-semibold text-slate-900">{{ $namaUtama }}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">Kode: {{ $item->kode_wilayah ?? '-' }}</div>
                             </td>
-                            <td class="py-3.5 px-5">
-                                @if((int) $w->level === 1)
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-[#315B46] border border-emerald-200">
-                                        {{ \App\Models\Wilayah::LEVEL[$w->level] ?? 'Provinsi' }}
+                            <td class="py-4 px-6">
+                                @if($isProvinsi)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70 rounded-full">
+                                        Provinsi
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
-                                        {{ \App\Models\Wilayah::LEVEL[$w->level] ?? '-' }}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80 rounded-full">
+                                        Kabupaten/Kota
                                     </span>
                                 @endif
                             </td>
-                            <td class="py-3.5 px-5 text-gray-600">
-                                {{ $w->induk->nama_wilayah ?? '-' }}
+                            <td class="py-4 px-6 text-slate-600">
+                                {{ $wilayahInduk }}
                             </td>
-                            <td class="py-3.5 px-5 text-right font-medium text-[#29352E] tabular-nums">
-                                {{ number_format($w->jumlah_penduduk ?? 0, 0, ',', '.') }}
-                                <span class="text-xs text-gray-400 font-normal ml-0.5">jiwa</span>
+                            <td class="py-4 px-6 text-right font-semibold text-slate-800 tabular-nums">
+                                {{ number_format($penduduk, 0, ',', '.') }} <span class="font-normal text-slate-400 text-xs">jiwa</span>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-12 px-5 text-center">
-                                <div class="flex flex-col items-center justify-center text-gray-400">
-                                    <svg class="w-10 h-10 mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                                    </svg>
-                                    <p class="text-sm font-medium text-gray-600">
-                                        @if (request()->filled('cari') || request()->filled('level'))
-                                            Tidak ada wilayah yang cocok dengan pencarian atau filter yang dipilih.
-                                        @else
-                                            Belum ada data wilayah.
-                                        @endif
-                                    </p>
-                                </div>
+                            <td colspan="5" class="text-center py-10 text-slate-400 text-sm">
+                                Belum ada data wilayah yang tersedia.
                             </td>
                         </tr>
                     @endforelse
@@ -156,21 +137,12 @@
             </table>
         </div>
 
-        <!-- FOOTER TABEL & PAGINATION -->
-        @if ($wilayah->total() > 0)
-            <div class="px-5 py-4 bg-gray-50/60 border-t border-gray-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p class="text-xs text-gray-500">
-                    Menampilkan <span class="font-semibold text-[#29352E]">{{ $wilayah->firstItem() }}</span>
-                    sampai <span class="font-semibold text-[#29352E]">{{ $wilayah->lastItem() }}</span>
-                    dari <span class="font-semibold text-[#29352E]">{{ $wilayah->total() }}</span> wilayah
-                </p>
-
-                <div>
-                    {{ $wilayah->links() }}
-                </div>
+        <!-- PAGINATION -->
+        @if($wilayah->hasPages())
+            <div class="p-4 border-t border-slate-100">
+                {{ $wilayah->links() }}
             </div>
         @endif
-
     </div>
 
 </div>

@@ -13,7 +13,7 @@
     <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -31,7 +31,7 @@
                         }
                     },
                     fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
                     }
                 }
             }
@@ -39,8 +39,8 @@
     </script>
 
     <style>
-        * {
-            font-family: 'Poppins', sans-serif;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             box-sizing: border-box;
         }
 
@@ -69,20 +69,33 @@
 
     <!-- SIDEBAR -->
     <aside id="sidebar"
-           class="fixed inset-y-0 left-0 z-50 w-72 bg-[#315B46] text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200 ease-in-out border-r border-[#274837] shadow-xl lg:shadow-none">
+           class="fixed inset-y-0 left-0 z-50 w-72 bg-[#133123] text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200 ease-in-out border-r border-[#274837] shadow-xl lg:shadow-none">
 
         <!-- SIDEBAR TOP -->
         <div class="flex flex-col flex-1 overflow-y-auto">
 
             <!-- LOGO HEADER -->
             <div class="h-20 px-6 flex items-center justify-between border-b border-white/10">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
-                    <div class="w-10 h-10 rounded-xl bg-[#527653] flex items-center justify-center font-bold text-white text-lg shadow-inner border border-white/20">
-                        B
+                <a href="{{ route('home') }}" class="flex items-center gap-3 group" title="Ke Beranda Utama">
+                    <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition">
+                        <svg class="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17 19C12.2 24.5 11.5 33.2 15.2 40.5C19.5 49 29.8 53 39.2 49.5C47.8 46.3 52.5 37.2 50.2 28.2C48.8 22.8 44.8 18.8 39.5 17.2" stroke="#5E8C3A" stroke-width="3.6" stroke-linecap="round"/>
+                            <path d="M49.5 29.5C47.5 23.5 42.5 19.5 36.5 18.5" stroke="#5E8C3A" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M50.2 27.5C52.2 24.2 54.5 22.2 57.5 21.5" stroke="#6B9E3E" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M35.5 18.2C32.2 18.5 30 16.5 30.2 14C33 13.8 35.2 15.6 35.5 18.2Z" fill="#8CC63F"/>
+                            <path d="M39.5 16.5C38 13.5 39.2 10.8 41.8 10.5C42.5 13 41.5 15.5 39.5 16.5Z" fill="#76B041"/>
+                            <path d="M44.5 18.5C44.5 15.2 46.8 13.2 49.2 14C48.8 16.6 46.8 18.2 44.5 18.5Z" fill="#9CD351"/>
+                            <path d="M48.5 21.8C50.2 19.2 53.2 18.8 54.8 20.6C53.2 22.5 50.6 22.8 48.5 21.8Z" fill="#76B041"/>
+                            <path d="M53.5 24.5C55.8 23.2 58.5 23.8 59.2 25.8C57 26.8 54.8 26.2 53.5 24.5Z" fill="#9CD351"/>
+                            <path d="M18.5 33.5L26.5 26.8L34.5 33.5" stroke="#F28C28" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M30.5 33.5L36.5 28.8L42.5 33.5" stroke="#F7A83B" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M16.5 38.5C22.5 36.5 29.5 37.5 35.5 40.5C29.5 43.5 21.5 43 16.5 38.5Z" fill="#9CD351"/>
+                            <path d="M24.5 42.5C31.5 38.8 39.5 38 46.2 39.8C42.5 44.8 32.5 46.2 24.5 42.5Z" fill="#6B9E3E"/>
+                        </svg>
                     </div>
-                    <div class="flex flex-col">
-                        <span class="font-bold text-lg tracking-tight text-white leading-tight">BiteUp</span>
-                        <span class="text-[10px] text-emerald-200/80 font-medium tracking-wider uppercase">Ketahanan Pangan</span>
+                    <div>
+                        <span class="block font-extrabold text-lg tracking-tight leading-none text-white">Bite<span class="text-[#A3E635]">Up</span></span>
+                        <span class="block text-[10px] font-bold tracking-widest uppercase text-emerald-200/75 mt-1">Ketahanan Pangan</span>
                     </div>
                 </a>
 
@@ -117,14 +130,106 @@
                 </div>
 
                 @auth
-                    <!-- MENU KHUSUS ROLE ID 4: PENGELOLA SISTEM BAPANAS (ADMINISTRATOR) -->
-                    @if((int) Auth::user()->id_roles === 4)
+                    @php
+                        $userRole = (int) Auth::user()->id_roles;
+                    @endphp
+
+                    <!-- MENU WILAYAH & FSVA -->
+                    @if(in_array($userRole, [1, 4], true))
+                        <div class="space-y-1 pt-2 border-t border-white/10">
+                            <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
+                                Wilayah & Ketahanan Pangan
+                            </p>
+
+                            @if(Route::has('wilayah.index'))
+                                <a href="{{ route('wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.*') ? 'bg-white/15 text-white shadow-xs' : 'text-emerald-100/75 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M4 18h16M6 18V9m4 9V9m4 9V9m4 9V9M3 9l9-6 9 6" />
+                                    </svg>
+                                    <span>Daftar Wilayah</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('data-wilayah.index'))
+                                <a href="{{ route('data-wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('data-wilayah.*') ? 'bg-white/15 text-white shadow-xs' : 'text-emerald-100/75 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>Data Wilayah FSVA</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('indikator-wilayah.index'))
+                                <a href="{{ route('indikator-wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('indikator-wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                    <span>Indikator Wilayah</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('prioritas-wilayah.index'))
+                                <a href="{{ route('prioritas-wilayah.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('prioritas-wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                                    </svg>
+                                    <span>Prioritas Wilayah</span>
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+
+                    <!-- MENU PROGRAM & KELOMPOK SASARAN -->
+                    @if(in_array($userRole, [3, 4], true))
+                        <div class="space-y-1 pt-2 border-t border-white/10">
+                            <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
+                                Program & Sasaran
+                            </p>
+
+                            @if(Route::has('kelompok-sasaran.index'))
+                                <a href="{{ route('kelompok-sasaran.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('kelompok-sasaran.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>Kelompok Sasaran</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('program.index'))
+                                <a href="{{ route('program.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('program.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                    <span>Data Program</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('target-program.index'))
+                                <a href="{{ route('target-program.index') }}"
+                                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('target-program.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                    <span>Target Program</span>
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+
+                    <!-- MENU ADMINISTRASI SISTEM -->
+                    @if($userRole === 4)
                         <div class="space-y-1 pt-2 border-t border-white/10">
                             <p class="px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2">
                                 Administrasi Sistem
                             </p>
 
-                            <!-- MANAJEMEN PENGGUNA -->
                             <a href="{{ route('admin.pengguna.index') }}"
                                class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('admin.pengguna.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
                                 <div class="flex items-center gap-3">
@@ -144,37 +249,6 @@
                                     </span>
                                 @endif
                             </a>
-
-                            <!-- DATA PROGRAM (PBI-017) -->
-                            <a href="{{ route('program.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('program.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
-                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                </svg>
-                                <span>Data Program</span>
-                            </a>
-
-                            <!-- TARGET PROGRAM (PBI-014) -->
-                            <a href="{{ route('target-program.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('target-program.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
-                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                </svg>
-                                <span>Target Program</span>
-                            </a>
-                        </div>
-                    @endif
-
-                <!-- PBI-002: DAFTAR WILAYAH -->
-                    @if(Route::has('wilayah.index'))
-                        <div class="space-y-1 pt-2 border-t border-white/10">
-                            <a href="{{ route('wilayah.index') }}"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('wilayah.*') ? 'bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
-                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Daftar Wilayah</span>
-                            </a>
                         </div>
                     @endif
                 @endauth
@@ -183,12 +257,50 @@
     </aside>
 
     <!-- MAIN CONTENT CONTAINER -->
-    <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        <!-- Optional Navbar atas kalau ada, atau langsung yield content -->
-        <main class="flex-1">
+    <main class="flex-1 flex flex-col min-w-0 overflow-x-hidden bg-[#F8FAFC]">
+        <!-- TOPBAR -->
+        <header class="h-16 bg-white/80 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-10 flex items-center justify-between sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button id="openSidebarBtn" type="button" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <span>BiteUp</span>
+                    <span>/</span>
+                    <span class="font-semibold text-slate-700">@yield('breadcrumb', 'Dashboard')</span>
+                </div>
+            </div>
+
+            @auth
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-[#133123] text-white flex items-center justify-center text-xs font-bold">
+                            {{ strtoupper(substr(Auth::user()->nama, 0, 1)) }}
+                        </div>
+                        <div class="leading-tight">
+                            <span class="text-xs font-semibold text-slate-800 block">{{ Auth::user()->nama }}</span>
+                            <span class="text-[11px] text-slate-400">{{ Auth::user()->role->nama_role ?? 'Petugas' }}</span>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('logout') }}" method="POST" class="m-0">
+                        @csrf
+                        <button type="submit"
+                                class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200/80 transition">
+                            Keluar
+                        </button>
+                    </form>
+                </div>
+            @endauth
+        </header>
+
+        <!-- AREA KONTEN -->
+        <div class="flex-1 px-6 py-7 lg:px-10 lg:py-8 max-w-[1440px] w-full mx-auto">
             @yield('content')
-        </main>
-    </div>
+        </div>
+    </main>
 
 </body>
 </html>

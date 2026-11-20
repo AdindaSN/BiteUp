@@ -21,13 +21,10 @@ class Wilayah extends Model
     ];
 
     protected $fillable = [
-        'parent_id',
         'kode_wilayah',
-        'nama_wilayah',
-        'level',
-        'jumlah_penduduk',
-        'latitude',
-        'longitude',
+        'provinsi',
+        'kabupaten_kota',
+        'tahun',
     ];
 
     public function parent(): BelongsTo

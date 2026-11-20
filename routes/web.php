@@ -4,17 +4,61 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataIndikatorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserManagementController;
-use App\Http\Controllers\ProgramSasaranController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\ProgramSasaranController;
 use App\Http\Controllers\KelompokSasaranController;
 use App\Models\User;
 use App\Http\Controllers\PrioritasWilayahController;
 use App\Http\Controllers\WilayahController;
+use App\Http\Controllers\DataWilayahFsvaController;
 
-// Halaman utama
+// Halaman utama (Landing Page Publik BiteUp)
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    $tahunTerbaru = \App\Models\HasilIkp::max('tahun') ?? date('Y');
+    $totalWilayah = \App\Models\Wilayah::count();
+    $totalProvinsi = \App\Models\Wilayah::distinct('provinsi')->count('provinsi');
+
+    $hasilIkp = \App\Models\HasilIkp::with('wilayah')->where('tahun', $tahunTerbaru)->get();
+    $rataRataIkp = $hasilIkp->avg('skor_ikp') ?? 0;
+    $wilayahRentan = $hasilIkp->filter(fn($r) => (float) $r->skor_ikp <= 53.42)->count();
+
+    $programAktif = \App\Models\Program::whereIn('status', ['Aktif', 'Berjalan'])->count();
+    if ($programAktif === 0) {
+        $programAktif = \App\Models\Program::count();
+    }
+    $totalPenerima = \App\Models\ProgramSasaran::sum('target_jumlah') ?? 0;
+
+    // Agregasi rata-rata skor IKP per provinsi untuk peta publik FSVA
+    $petaProvinsi = $hasilIkp
+        ->filter(fn($r) => $r->wilayah && !empty($r->wilayah->provinsi))
+        ->groupBy(fn($r) => strtoupper(trim($r->wilayah->provinsi)))
+        ->map(function ($rows, $prov) {
+            $avgSkor = round($rows->avg('skor_ikp'), 2);
+            $prio = $avgSkor < 45.60 ? 1
+                : ($avgSkor <= 53.42 ? 2
+                : ($avgSkor <= 61.47 ? 3
+                : ($avgSkor <= 69.52 ? 4
+                : ($avgSkor <= 77.35 ? 5 : 6))));
+            return [
+                'provinsi' => $prov,
+                'skor_ikp' => $avgSkor,
+                'prioritas' => $prio,
+                'jumlah_kab' => $rows->count(),
+            ];
+        })
+        ->values();
+
+    return view('welcome', compact(
+        'tahunTerbaru',
+        'totalWilayah',
+        'totalProvinsi',
+        'rataRataIkp',
+        'wilayahRentan',
+        'programAktif',
+        'totalPenerima',
+        'petaProvinsi'
+    ));
+})->name('home');
 
 // Route untuk pengguna yang belum login
 Route::middleware('guest')->group(function () {
@@ -37,9 +81,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
-    Route::get('/dashboard', function () {
+    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
-        $isAdmin = (int) $user->id_roles === 4;
+        $roleId = (int) $user->id_roles;
+        $isAdmin = $roleId === 4;
 
         $pendingUsersCount = 0;
         $activeUsersCount = 0;
@@ -57,30 +102,200 @@ Route::middleware('auth')->group(function () {
                 ->get();
         }
 
+        $tahunFilter = (int) $request->input('tahun', date('Y'));
+        $indikatorFilter = $request->input('indikator', 'Indeks Ketahanan Pangan');
+
+        $daftarTahun = \App\Models\HasilIkp::select('tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun')
+            ->toArray();
+        if (empty($daftarTahun)) {
+            $daftarTahun = [(int) date('Y'), (int) date('Y') - 1];
+        }
+        if (!in_array($tahunFilter, $daftarTahun, true)) {
+            $tahunFilter = $daftarTahun[0];
+        }
+
+        $totalProgram = \App\Models\Program::count();
+        $programAktif = \App\Models\Program::whereIn('status', ['Aktif', 'Berjalan'])->count();
+        $totalTargetPenerima = (int) \App\Models\ProgramSasaran::sum('target_jumlah');
+        $totalAlokasiTarget = \App\Models\ProgramSasaran::count();
+        $totalKelompokSasaran = \App\Models\KelompokSasaran::count();
+        $totalPendudukRentan = (int) \App\Models\KelompokSasaran::sum('jumlah');
+        $wilayahTerjangkau = \App\Models\KelompokSasaran::join('program_sasaran', 'kelompok_sasaran.id_kelompok_sasaran', '=', 'program_sasaran.id_kelompok')
+            ->distinct('id_wilayah')
+            ->count('id_wilayah');
+
+        $hasilIkpRows = \App\Models\HasilIkp::with('wilayah')
+            ->where('tahun', $tahunFilter)
+            ->get();
+
+        $petaProvinsi = [];
+        foreach ($hasilIkpRows->groupBy(fn($r) => strtoupper(trim($r->wilayah->provinsi ?? ''))) as $provName => $items) {
+            if ($provName === '') continue;
+            $avgSkor = round($items->avg('skor_ikp'), 2);
+            $kategori = $avgSkor < 50 ? 'Sangat Prioritas'
+                : ($avgSkor < 62 ? 'Prioritas'
+                : ($avgSkor < 72 ? 'Cukup' : 'Tidak Prioritas'));
+
+            $petaProvinsi[$provName] = [
+                'provinsi' => $items->first()->wilayah->provinsi,
+                'skor_ikp' => $avgSkor,
+                'kategori' => $kategori,
+                'jumlah_wilayah' => $items->count(),
+            ];
+        }
+
+        $targetProgramTerbaru = \App\Models\ProgramSasaran::with(['program.jenisBantuan', 'kelompokSasaran.wilayah', 'kelompokSasaran.jenisKelompok'])
+            ->orderBy('id_program_sasaran', 'desc')
+            ->take(6)
+            ->get();
+
+        // Statistik analitik khusus Petugas Data Wilayah (Role 1)
+        $totalWilayah = \App\Models\Wilayah::count();
+        $totalKabKota = \App\Models\Wilayah::whereNotNull('kabupaten_kota')
+            ->where('kabupaten_kota', '!=', '-')
+            ->count();
+        $totalProvinsi = \App\Models\Wilayah::distinct('provinsi')->count('provinsi');
+
+        $totalIndikator = \App\Models\Indikator::count();
+        $totalDataIndikator = \App\Models\DataIndikator::where('tahun', $tahunFilter)->count();
+        $targetTotalEntri = max(1, $totalWilayah * max(1, $totalIndikator));
+        $persenKelengkapan = min(100, round(($totalDataIndikator / $targetTotalEntri) * 100));
+
+        $hasilIkpTahun = \App\Models\HasilIkp::with('wilayah')->where('tahun', $tahunFilter)->get();
+        $totalHasilIkp = $hasilIkpTahun->count();
+        $rataRataIkp = $hasilIkpTahun->avg('skor_ikp') ?? 0;
+
+        $klasifikasiIkp = function ($skor) {
+            $s = (float) $skor;
+            if ($s < 45.60) return [1, 'Sangat Rentan'];
+            if ($s <= 53.42) return [2, 'Rentan'];
+            if ($s <= 61.47) return [3, 'Agak Rentan'];
+            if ($s <= 69.52) return [4, 'Agak Tahan'];
+            if ($s <= 77.35) return [5, 'Tahan'];
+            return [6, 'Sangat Tahan'];
+        };
+
+        $wilayahPrioritasTinggi = $hasilIkpTahun->filter(fn($r) => (float) $r->skor_ikp <= 53.42)->count();
+
+        $distribusiPrioritas = [];
+        $metaPrioritas = [
+            1 => ['label' => 'Prioritas 1 — Sangat Rentan', 'range' => '< 45,59', 'color' => '#991B1B'],
+            2 => ['label' => 'Prioritas 2 — Rentan', 'range' => '45,60 – 53,42', 'color' => '#EF4444'],
+            3 => ['label' => 'Prioritas 3 — Agak Rentan', 'range' => '53,43 – 61,47', 'color' => '#F97316'],
+            4 => ['label' => 'Prioritas 4 — Agak Tahan', 'range' => '61,48 – 69,52', 'color' => '#EAB308'],
+            5 => ['label' => 'Prioritas 5 — Tahan', 'range' => '69,53 – 77,35', 'color' => '#84CC16'],
+            6 => ['label' => 'Prioritas 6 — Sangat Tahan', 'range' => '> 77,35', 'color' => '#15803D'],
+        ];
+        foreach ($metaPrioritas as $level => $meta) {
+            $jml = $hasilIkpTahun->filter(fn($r) => $klasifikasiIkp($r->skor_ikp)[0] === $level)->count();
+            $distribusiPrioritas[] = [
+                'level' => $level,
+                'label' => $meta['label'],
+                'range' => $meta['range'],
+                'color' => $meta['color'],
+                'count' => $jml,
+                'pct'   => $totalHasilIkp > 0 ? round(($jml / $totalHasilIkp) * 100, 1) : 0,
+            ];
+        }
+
+        $entriPerIndikator = \App\Models\DataIndikator::where('tahun', $tahunFilter)
+            ->selectRaw('id_indikator, COUNT(*) as total')
+            ->groupBy('id_indikator')
+            ->pluck('total', 'id_indikator');
+
+        $statistikIndikator = \App\Models\Indikator::all()->map(function ($ind) use ($entriPerIndikator, $totalWilayah) {
+            $pk = $ind->getKey();
+            $ind->jumlah_entri = (int) ($entriPerIndikator[$pk] ?? 0);
+            $ind->persen = $totalWilayah > 0 ? min(100, round(($ind->jumlah_entri / $totalWilayah) * 100)) : 0;
+            return $ind;
+        });
+
+        $hasilPrioritasTerbaru = $hasilIkpTahun
+            ->sortBy('skor_ikp')
+            ->values()
+            ->take(8)
+            ->map(function ($row) use ($klasifikasiIkp) {
+                [$level, $namaKat] = $klasifikasiIkp($row->skor_ikp);
+                $row->level_prioritas = $level;
+                $row->label_prioritas = $row->kategori_prioritas ?? $namaKat;
+                return $row;
+            });
+
         return view('dashboard', compact(
             'pendingUsersCount',
             'activeUsersCount',
             'rejectedUsersCount',
-            'latestPendingUsers'
+            'latestPendingUsers',
+            'tahunFilter',
+            'indikatorFilter',
+            'daftarTahun',
+            'totalProgram',
+            'programAktif',
+            'totalTargetPenerima',
+            'totalAlokasiTarget',
+            'totalKelompokSasaran',
+            'totalPendudukRentan',
+            'wilayahTerjangkau',
+            'petaProvinsi',
+            'targetProgramTerbaru',
+            'totalWilayah',
+            'totalKabKota',
+            'totalProvinsi',
+            'totalIndikator',
+            'totalDataIndikator',
+            'persenKelengkapan',
+            'totalHasilIkp',
+            'rataRataIkp',
+            'wilayahPrioritasTinggi',
+            'distribusiPrioritas',
+            'statistikIndikator',
+            'hasilPrioritasTerbaru'
         ));
     })->name('dashboard');
-
-    // Pengelolaan Program Bantuan (PBI-017)
-    Route::middleware('role:3,4')->prefix('program')->name('program.')->group(function () {
-        Route::get('/', [ProgramController::class, 'index'])->name('index');
-        Route::get('/tambah', [ProgramController::class, 'create'])->name('create');
-        Route::post('/', [ProgramController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [ProgramController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [ProgramController::class, 'update'])->name('update');
-        Route::delete('/{id}', [ProgramController::class, 'destroy'])->name('destroy');
-    });
 
     // Pengelolaan Data Kelompok Sasaran (PBI-011)
     Route::get('/kelompok-sasaran', [KelompokSasaranController::class, 'index'])
         ->name('kelompok-sasaran.index');
 
+    // Menambahkan Data Kelompok Sasaran (PBI-012)
+    Route::middleware('role:3,4')->group(function () {
+        Route::get('/kelompok-sasaran/create', [KelompokSasaranController::class, 'create'])
+            ->name('kelompok-sasaran.create');
+        Route::post('/kelompok-sasaran', [KelompokSasaranController::class, 'store'])
+            ->name('kelompok-sasaran.store');
+    });
+
+    // Mengubah Data Kelompok Sasaran (PBI-013)
+    Route::middleware('role:3,4')->group(function () {
+        Route::get('/kelompok-sasaran/{kelompokSasaran}/edit', [KelompokSasaranController::class, 'edit'])
+            ->name('kelompok-sasaran.edit');
+        Route::put('/kelompok-sasaran/{kelompokSasaran}', [KelompokSasaranController::class, 'update'])
+            ->name('kelompok-sasaran.update');
+    });
+
+    // Menghapus Data Kelompok Sasaran (PBI-014)
+    Route::middleware('role:3,4')->group(function () {
+        Route::delete('/kelompok-sasaran/{kelompokSasaran}', [KelompokSasaranController::class, 'destroy'])
+            ->name('kelompok-sasaran.destroy');
+    });
+
     // Khusus Petugas Data Wilayah (Role ID 1) & Admin (Role ID 4)
     Route::middleware('role:1,4')->group(function () {
+        // PBI-001 & PBI-002: Manajemen Data Wilayah
+        Route::get('/wilayah', [WilayahController::class, 'index'])
+            ->name('wilayah.index');
+        Route::get('/wilayah/create', [WilayahController::class, 'create'])
+            ->name('wilayah.create');
+                Route::post('/wilayah', [WilayahController::class, 'store'])
+            ->name('wilayah.store');
+
+        // PBI-005 & PBI-006: Data Wilayah & FSVA
+        Route::get('/data-wilayah', [DataWilayahFsvaController::class, 'index'])
+            ->name('data-wilayah.index');
+
         // PBI-008: Halaman Data Indikator per Wilayah
         Route::get('/indikator-wilayah', [DataIndikatorController::class, 'index'])
             ->name('indikator-wilayah.index');
@@ -91,36 +306,27 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/prioritas-wilayah/proses', [PrioritasWilayahController::class, 'prosesPengelompokan'])
             ->name('prioritas-wilayah.proses');
-
-        // PBI-002: Melihat Daftar Wilayah
-        Route::get('/wilayah', [WilayahController::class, 'index'])
-            ->name('wilayah.index');
-
-        // PBI-001: Menambahkan Data Wilayah
-        Route::get('/wilayah/tambah', [WilayahController::class, 'create'])
-            ->name('wilayah.create');
-
-        Route::post('/wilayah', [WilayahController::class, 'store'])
-            ->name('wilayah.store');
     });
+
+    // Pengelolaan Data Program (PBI-017)
+    Route::resource('program', ProgramController::class)->except(['show']);
 
     // Pengelolaan Target Program (PBI-014)
     Route::get('/target-program', [ProgramSasaranController::class, 'index'])
         ->name('target-program.index');
 
     Route::middleware('role:3,4')->group(function () {
-        // Tambah Data Kelompok Sasaran (PBI-012)
-        Route::get('/kelompok-sasaran/create', [KelompokSasaranController::class, 'create'])
-            ->name('kelompok-sasaran.create');
-
-        Route::post('/kelompok-sasaran', [KelompokSasaranController::class, 'store'])
-            ->name('kelompok-sasaran.store');
-
         Route::get('/target-program/create', [ProgramSasaranController::class, 'create'])
             ->name('target-program.create');
 
         Route::post('/target-program', [ProgramSasaranController::class, 'store'])
             ->name('target-program.store');
+
+        Route::get('/target-program/{id}/edit', [ProgramSasaranController::class, 'edit'])
+            ->name('target-program.edit');
+
+        Route::put('/target-program/{id}', [ProgramSasaranController::class, 'update'])
+            ->name('target-program.update');
 
         // API FSVA untuk formulir target program
         Route::get('/target-program/api/fsva', [ProgramSasaranController::class, 'getFsvaData'])

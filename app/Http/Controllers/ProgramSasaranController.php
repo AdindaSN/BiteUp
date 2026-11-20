@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\DataIndikator;
-use App\Models\Indikator;
 use App\Models\JenisBantuan;
 use App\Models\JenisKelompok;
 use App\Models\KelompokSasaran;
@@ -46,7 +45,8 @@ class ProgramSasaranController extends Controller
                 $q->whereHas('program', function ($p) use ($search) {
                     $p->where('nama_program', 'like', "%{$search}%");
                 })->orWhereHas('kelompokSasaran.wilayah', function ($w) use ($search) {
-                    $w->where('nama_wilayah', 'like', "%{$search}%");
+                    $w->where('kabupaten_kota', 'like', "%{$search}%")
+                      ->orWhere('provinsi', 'like', "%{$search}%");
                 })->orWhereHas('kelompokSasaran', function ($k) use ($search) {
                     $k->where('tahun', 'like', "%{$search}%");
                 });
@@ -67,10 +67,15 @@ class ProgramSasaranController extends Controller
     {
         $this->authorizeManageTarget();
 
-        // Daftar wilayah kabupaten/kota (level 2) untuk pilihan wilayah prioritas
-        $daftarWilayah = Wilayah::where('level', 2)
-            ->orderBy('nama_wilayah')
+        // Daftar wilayah kabupaten/kota untuk pilihan wilayah prioritas
+        $daftarWilayah = Wilayah::where('kabupaten_kota', '!=', '-')
+            ->whereNotNull('kabupaten_kota')
+            ->orderBy('provinsi')
+            ->orderBy('kabupaten_kota')
             ->get();
+
+        // Daftar program bantuan yang sudah tersedia (untuk saran autocomplete)
+        $daftarProgram = Program::orderBy('nama_program')->get();
 
         // Daftar jenis kelompok sasaran
         $daftarJenisKelompok = JenisKelompok::orderBy('nama_jenis')->get();
@@ -83,6 +88,7 @@ class ProgramSasaranController extends Controller
 
         return view('target-program.create', compact(
             'daftarWilayah',
+            'daftarProgram',
             'daftarJenisKelompok',
             'daftarKelompok'
         ));
@@ -122,11 +128,9 @@ class ProgramSasaranController extends Controller
 
         // Cari atau buat program berdasarkan nama yang diketik
         $program = DB::transaction(function () use ($validated) {
-            // Cari program yang sudah ada dengan nama yang sama
             $program = Program::where('nama_program', $validated['nama_program'])->first();
 
             if (!$program) {
-                // Buat program baru dengan data default
                 $jenisBantuan = JenisBantuan::first();
 
                 $program = Program::create([
@@ -169,6 +173,117 @@ class ProgramSasaranController extends Controller
     /**
      * API: Mengambil data FSVA berdasarkan wilayah terpilih.
      */
+        /**
+     * Menampilkan formulir pengubahan data target program (PBI-015).
+     */
+    public function edit($id)
+    {
+        $this->authorizeManageTarget();
+
+        $targetProgram = ProgramSasaran::with([
+            'program',
+            'kelompokSasaran.wilayah',
+            'kelompokSasaran.jenisKelompok',
+        ])->findOrFail($id);
+
+        $daftarWilayah = Wilayah::where('kabupaten_kota', '!=', '-')
+            ->whereNotNull('kabupaten_kota')
+            ->orderBy('provinsi')
+            ->orderBy('kabupaten_kota')
+            ->get();
+
+        $daftarProgram = Program::orderBy('nama_program')->get();
+
+        $daftarKelompok = KelompokSasaran::with([
+            'wilayah',
+            'jenisKelompok',
+        ])->orderByDesc('tahun')->get();
+
+        return view('target-program.edit', compact(
+            'targetProgram',
+            'daftarWilayah',
+            'daftarProgram',
+            'daftarKelompok'
+        ));
+    }
+
+    /**
+     * Memperbarui data target program pada database (PBI-015).
+     */
+    public function update(Request $request, $id)
+    {
+        $this->authorizeManageTarget();
+
+        $targetProgram = ProgramSasaran::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama_program' => [
+                'required',
+                'string',
+                'max:150',
+            ],
+            'id_kelompok' => [
+                'required',
+                'exists:kelompok_sasaran,id_kelompok_sasaran',
+            ],
+            'target_jumlah' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+        ], [
+            'nama_program.required' => 'Nama program bantuan wajib diisi.',
+            'nama_program.max' => 'Nama program bantuan maksimal 150 karakter.',
+            'id_kelompok.required' => 'Kelompok sasaran wajib dipilih.',
+            'id_kelompok.exists' => 'Kelompok sasaran yang dipilih tidak valid.',
+            'target_jumlah.required' => 'Jumlah target penerima wajib diisi.',
+            'target_jumlah.integer' => 'Jumlah target harus berupa angka bulat.',
+            'target_jumlah.min' => 'Jumlah target minimal 1 penerima.',
+        ]);
+
+        $program = DB::transaction(function () use ($validated) {
+            $program = Program::where('nama_program', $validated['nama_program'])->first();
+
+            if (!$program) {
+                $jenisBantuan = JenisBantuan::first();
+
+                $program = Program::create([
+                    'id_user' => auth()->user()->id_user,
+                    'id_jenis_bantuan' => $jenisBantuan ? $jenisBantuan->id_jenis_bantuan : 1,
+                    'nama_program' => $validated['nama_program'],
+                    'tanggal_mulai' => now()->toDateString(),
+                    'tanggal_selesai' => now()->addYear()->toDateString(),
+                    'status' => 'Berjalan',
+                ]);
+            }
+
+            return $program;
+        });
+
+        $isDuplicate = ProgramSasaran::where('id_program', $program->id_program)
+            ->where('id_kelompok', $validated['id_kelompok'])
+            ->where('id_program_sasaran', '!=', $targetProgram->id_program_sasaran)
+            ->exists();
+
+        if ($isDuplicate) {
+            return back()->withInput()->withErrors([
+                'id_kelompok' => 'Target untuk program dan kelompok sasaran ini sudah terdaftar pada data lain.',
+            ]);
+        }
+
+        DB::transaction(function () use ($targetProgram, $program, $validated) {
+            $targetProgram->update([
+                'id_program' => $program->id_program,
+                'id_kelompok' => $validated['id_kelompok'],
+                'target_jumlah' => $validated['target_jumlah'],
+            ]);
+        });
+
+        return redirect()
+            ->route('target-program.index')
+            ->with('success', 'Data target program berhasil diperbarui.');
+    }
+
     public function getFsvaData(Request $request)
     {
         $request->validate([
@@ -194,15 +309,18 @@ class ProgramSasaranController extends Controller
                 ];
             });
 
-        // Ambil IKP dan PKOMP jika ada
+        // Ambil IKP jika ada
         $ikpData = $dataFsva->firstWhere('kode', 'IKP');
+        $namaWilayah = ($wilayah->kabupaten_kota && $wilayah->kabupaten_kota !== '-')
+            ? $wilayah->kabupaten_kota
+            : ($wilayah->provinsi ?? '-');
 
         return response()->json([
             'wilayah' => [
                 'id' => $wilayah->id_wilayah,
-                'nama' => $wilayah->nama_wilayah,
+                'nama' => $namaWilayah,
                 'kode' => $wilayah->kode_wilayah,
-                'provinsi' => $wilayah->parent->nama_wilayah ?? '-',
+                'provinsi' => $wilayah->provinsi ?? ($wilayah->parent->provinsi ?? '-'),
             ],
             'fsva_tersedia' => $dataFsva->isNotEmpty(),
             'ikp' => $ikpData ? $ikpData['nilai'] : null,
