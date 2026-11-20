@@ -268,7 +268,7 @@
                     <span class="text-slate-400">Standar klasifikasi Badan Pangan Nasional (FSVA)</span>
                     @if(Route::has('prioritas-wilayah.index'))
                         <a href="{{ route('prioritas-wilayah.index') }}" class="font-semibold text-[#2E6F40] hover:underline">
-                            Kelola Pengelompokan &rarr;
+                            Kelola Pengelompokan <svg class="w-3.5 h-3.5 inline-block ml-0.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6"/></svg>
                         </a>
                     @endif
                 </div>
@@ -314,7 +314,7 @@
                     <span class="text-slate-400">Total {{ $totalIndikator }} indikator terukur</span>
                     @if(Route::has('indikator-wilayah.index'))
                         <a href="{{ route('indikator-wilayah.index') }}" class="font-semibold text-[#2E6F40] hover:underline">
-                            Perbarui Nilai Indikator &rarr;
+                            Perbarui Nilai Indikator <svg class="w-3.5 h-3.5 inline-block ml-0.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6"/></svg>
                         </a>
                     @endif
                 </div>
@@ -332,7 +332,7 @@
                     <a href="{{ route('prioritas-wilayah.index') }}"
                        class="text-xs font-semibold text-[#2E6F40] hover:text-[#1e4d2b] inline-flex items-center gap-1 transition">
                         <span>Lihat Seluruh Wilayah</span>
-                        <span>&rarr;</span>
+                        <span><svg class="w-3.5 h-3.5 inline-block ml-0.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6"/></svg></span>
                     </a>
                 @endif
             </div>
@@ -670,7 +670,7 @@
                 <a href="{{ route('target-program.index') }}"
                    class="text-xs font-semibold text-[#2E6F40] hover:text-[#1e4d2b] inline-flex items-center gap-1 transition">
                     <span>Lihat Semua Target</span>
-                    <span>&rarr;</span>
+                    <span><svg class="w-3.5 h-3.5 inline-block ml-0.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6"/></svg></span>
                 </a>
             </div>
 

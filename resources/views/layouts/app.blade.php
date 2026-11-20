@@ -13,7 +13,7 @@
     <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -31,7 +31,7 @@
                         }
                     },
                     fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
                     }
                 }
             }
@@ -40,7 +40,7 @@
 
     <style>
         * {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             box-sizing: border-box;
         }
 
@@ -69,20 +69,33 @@
 
     <!-- SIDEBAR -->
     <aside id="sidebar"
-           class="fixed inset-y-0 left-0 z-50 w-72 bg-[#315B46] text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200 ease-in-out border-r border-[#274837] shadow-xl lg:shadow-none">
+           class="fixed inset-y-0 left-0 z-50 w-72 bg-[#133123] text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200 ease-in-out border-r border-[#274837] shadow-xl lg:shadow-none">
 
         <!-- SIDEBAR TOP -->
         <div class="flex flex-col flex-1 overflow-y-auto">
 
             <!-- LOGO HEADER -->
             <div class="h-20 px-6 flex items-center justify-between border-b border-white/10">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
-                    <div class="w-10 h-10 rounded-xl bg-[#527653] flex items-center justify-center font-bold text-white text-lg shadow-inner border border-white/20">
-                        B
+                                <a href="{{ route('home') }}" class="flex items-center gap-3 group" title="Ke Beranda Utama">
+                    <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition">
+                        <svg class="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17 19C12.2 24.5 11.5 33.2 15.2 40.5C19.5 49 29.8 53 39.2 49.5C47.8 46.3 52.5 37.2 50.2 28.2C48.8 22.8 44.8 18.8 39.5 17.2" stroke="#5E8C3A" stroke-width="3.6" stroke-linecap="round"/>
+                            <path d="M49.5 29.5C47.5 23.5 42.5 19.5 36.5 18.5" stroke="#5E8C3A" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M50.2 27.5C52.2 24.2 54.5 22.2 57.5 21.5" stroke="#6B9E3E" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M35.5 18.2C32.2 18.5 30 16.5 30.2 14C33 13.8 35.2 15.6 35.5 18.2Z" fill="#8CC63F"/>
+                            <path d="M39.5 16.5C38 13.5 39.2 10.8 41.8 10.5C42.5 13 41.5 15.5 39.5 16.5Z" fill="#76B041"/>
+                            <path d="M44.5 18.5C44.5 15.2 46.8 13.2 49.2 14C48.8 16.6 46.8 18.2 44.5 18.5Z" fill="#9CD351"/>
+                            <path d="M48.5 21.8C50.2 19.2 53.2 18.8 54.8 20.6C53.2 22.5 50.6 22.8 48.5 21.8Z" fill="#76B041"/>
+                            <path d="M53.5 24.5C55.8 23.2 58.5 23.8 59.2 25.8C57 26.8 54.8 26.2 53.5 24.5Z" fill="#9CD351"/>
+                            <path d="M18.5 33.5L26.5 26.8L34.5 33.5" stroke="#F28C28" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M30.5 33.5L36.5 28.8L42.5 33.5" stroke="#F7A83B" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M16.5 38.5C22.5 36.5 29.5 37.5 35.5 40.5C29.5 43.5 21.5 43 16.5 38.5Z" fill="#9CD351"/>
+                            <path d="M24.5 42.5C31.5 38.8 39.5 38 46.2 39.8C42.5 44.8 32.5 46.2 24.5 42.5Z" fill="#6B9E3E"/>
+                        </svg>
                     </div>
-                    <div class="flex flex-col">
-                        <span class="font-bold text-lg tracking-tight text-white leading-tight">BiteUp</span>
-                        <span class="text-[10px] text-emerald-200/80 font-medium tracking-wider uppercase">Ketahanan Pangan</span>
+                    <div>
+                        <span class="block font-extrabold text-lg tracking-tight leading-none text-white">Bite<span class="text-[#A3E635]">Up</span></span>
+                        <span class="block text-[10px] font-bold tracking-widest uppercase text-emerald-200/75 mt-1">Ketahanan Pangan</span>
                     </div>
                 </a>
 
@@ -261,7 +274,7 @@
             @auth
                 <div class="flex items-center gap-4">
                     <div class="hidden sm:flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-full bg-[#315B46] text-white flex items-center justify-center text-xs font-bold">
+                        <div class="w-8 h-8 rounded-full bg-[#133123] text-white flex items-center justify-center text-xs font-bold">
                             {{ strtoupper(substr(Auth::user()->nama, 0, 1)) }}
                         </div>
                         <div class="leading-tight">

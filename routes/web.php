@@ -12,10 +12,53 @@ use App\Http\Controllers\PrioritasWilayahController;
 use App\Http\Controllers\WilayahController;
 use App\Http\Controllers\DataWilayahFsvaController;
 
-// Halaman utama
+// Halaman utama (Landing Page Publik BiteUp)
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    $tahunTerbaru = \App\Models\HasilIkp::max('tahun') ?? date('Y');
+    $totalWilayah = \App\Models\Wilayah::count();
+    $totalProvinsi = \App\Models\Wilayah::distinct('provinsi')->count('provinsi');
+
+    $hasilIkp = \App\Models\HasilIkp::with('wilayah')->where('tahun', $tahunTerbaru)->get();
+    $rataRataIkp = $hasilIkp->avg('skor_ikp') ?? 0;
+    $wilayahRentan = $hasilIkp->filter(fn($r) => (float) $r->skor_ikp <= 53.42)->count();
+
+    $programAktif = \App\Models\Program::whereIn('status', ['Aktif', 'Berjalan'])->count();
+    if ($programAktif === 0) {
+        $programAktif = \App\Models\Program::count();
+    }
+    $totalPenerima = \App\Models\ProgramSasaran::sum('target_jumlah') ?? 0;
+
+    // Agregasi rata-rata skor IKP per provinsi untuk peta publik FSVA
+    $petaProvinsi = $hasilIkp
+        ->filter(fn($r) => $r->wilayah && !empty($r->wilayah->provinsi))
+        ->groupBy(fn($r) => strtoupper(trim($r->wilayah->provinsi)))
+        ->map(function ($rows, $prov) {
+            $avgSkor = round($rows->avg('skor_ikp'), 2);
+            $prio = $avgSkor < 45.60 ? 1
+                : ($avgSkor <= 53.42 ? 2
+                : ($avgSkor <= 61.47 ? 3
+                : ($avgSkor <= 69.52 ? 4
+                : ($avgSkor <= 77.35 ? 5 : 6))));
+            return [
+                'provinsi' => $prov,
+                'skor_ikp' => $avgSkor,
+                'prioritas' => $prio,
+                'jumlah_kab' => $rows->count(),
+            ];
+        })
+        ->values();
+
+    return view('welcome', compact(
+        'tahunTerbaru',
+        'totalWilayah',
+        'totalProvinsi',
+        'rataRataIkp',
+        'wilayahRentan',
+        'programAktif',
+        'totalPenerima',
+        'petaProvinsi'
+    ));
+})->name('home');
 
 // Route untuk pengguna yang belum login
 Route::middleware('guest')->group(function () {
@@ -80,7 +123,7 @@ Route::middleware('auth')->group(function () {
         $totalAlokasiTarget = \App\Models\ProgramSasaran::count();
         $totalKelompokSasaran = \App\Models\KelompokSasaran::count();
         $totalPendudukRentan = (int) \App\Models\KelompokSasaran::sum('jumlah');
-        $wilayahTerjangkau = \App\Models\KelompokSasaran::whereHas('programSasaran')
+        $wilayahTerjangkau = \App\Models\KelompokSasaran::join('program_sasaran', 'kelompok_sasaran.id_kelompok_sasaran', '=', 'program_sasaran.id_kelompok')
             ->distinct('id_wilayah')
             ->count('id_wilayah');
 
