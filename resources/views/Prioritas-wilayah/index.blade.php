@@ -193,11 +193,11 @@
 
         <div class="fsva-filter-group">
             <label>Provinsi</label>
-            <select name="provinsi_id" onchange="this.form.submit()">
+            <select name="provinsi" onchange="this.form.submit()">
                 <option value="">Semua Provinsi</option>
                 @foreach($provinsiList as $prov)
-                    <option value="{{ $prov->id_wilayah }}" {{ $provinsiId == $prov->id_wilayah ? 'selected' : '' }}>
-                        {{ $prov->nama_wilayah }}
+                    <option value="{{ $prov }}" {{ $provinsi == $prov ? 'selected' : '' }}>
+                        {{ $prov }}
                     </option>
                 @endforeach
             </select>
@@ -245,8 +245,8 @@
                 <tr>
                     <td>{{ $hasilPrioritas->firstItem() + $index }}</td>
                     <td>{{ $row->wilayah->kode_wilayah ?? '-' }}</td>
-                    <td style="font-weight: 600; color: #1e293b;">{{ $row->wilayah->nama_wilayah ?? '-' }}</td>
-                    <td>{{ $row->wilayah->parent->nama_wilayah ?? '-' }}</td>
+                    <td style="font-weight: 600; color: #1e293b;">{{ $row->wilayah->kabupaten_kota ?? '-' }}</td>
+                    <td>{{ $row->wilayah->provinsi ?? '-' }}</td>
                     <td style="font-weight: 700; color: #2e6b4e;">{{ number_format($row->skor_ikp, 2, ',', '.') }}</td>
                     <td>
                         <span class="badge-prio prio-{{ $prioNum }}">

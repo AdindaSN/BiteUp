@@ -121,11 +121,11 @@
 
             <div class="fsva-filter-group">
                 <label>Provinsi</label>
-                <select name="provinsi_id" onchange="this.form.submit()">
+                <select name="provinsi" onchange="this.form.wilayah_id.value=''; this.form.submit()">
                     <option value="">Semua Provinsi</option>
                     @foreach($provinsiList as $prov)
-                        <option value="{{ $prov->id_wilayah }}" {{ $provinsiId == $prov->id_wilayah ? 'selected' : '' }}>
-                            {{ $prov->nama_wilayah }}
+                        <option value="{{ $prov }}" {{ $provinsi == $prov ? 'selected' : '' }}>
+                            {{ $prov }}
                         </option>
                     @endforeach
                 </select>
@@ -137,7 +137,7 @@
                     <option value="">Semua Kabupaten/Kota</option>
                     @foreach($kabupatenList as $kab)
                         <option value="{{ $kab->id_wilayah }}" {{ $wilayahId == $kab->id_wilayah ? 'selected' : '' }}>
-                            {{ $kab->nama_wilayah }}
+                            {{ $kab->kabupaten_kota }}
                         </option>
                     @endforeach
                 </select>
@@ -178,8 +178,8 @@
                     <tr>
                         <td>{{ $dataIndikator->firstItem() + $index }}</td>
                         <td>{{ $item->wilayah->kode_wilayah ?? '-' }}</td>
-                        <td style="font-weight: 600; color: #1e293b;">{{ $item->wilayah->nama_wilayah ?? '-' }}</td>
-                        <td>{{ $item->wilayah->parent->nama_wilayah ?? '-' }}</td>
+                        <td style="font-weight: 600; color: #1e293b;">{{ $item->wilayah->kabupaten_kota ?? '-' }}</td>
+                        <td>{{ $item->wilayah->provinsi ?? '-' }}</td>
                         <td>{{ $item->indikator->dimensi ?? '-' }}</td>
                         <td>{{ $item->indikator->nama_indikator ?? '-' }}</td>
                         <td style="font-weight: 700; color: #2e6b4e;">
