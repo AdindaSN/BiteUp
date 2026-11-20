@@ -81,7 +81,6 @@ class ProgramController extends Controller
             'deskripsi.max' => 'Deskripsi program tidak boleh lebih dari 1000 karakter.',
         ]);
 
-        // Prioritize authenticated user, fallback to Petugas Program or first user, or null
         $userId = Auth::id()
             ?? User::where('email', 'petugas@biteup.com')->value('id_user')
             ?? User::first()?->id_user;
@@ -166,7 +165,6 @@ class ProgramController extends Controller
     {
         try {
             $program = Program::findOrFail($id);
-            $nama = $program->nama_program;
             $program->delete();
 
             return redirect()
