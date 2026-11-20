@@ -1,29 +1,3 @@
 <?php
 
-namespace App\Http\Controllers;
-
-use App\Models\Wilayah;
-use Illuminate\Http\Request;
-
-class DataWilayahFsvaController extends Controller
-{
-    public function index(Request $request)
-    {
-        $query = Wilayah::query();
-
-        if ($request->filled('cari')) {
-            $keyword = $request->cari;
-            $query->where(function ($q) use ($keyword) {
-                $q->where('provinsi', 'like', '%' . $keyword . '%')
-                  ->orWhere('kabupaten_kota', 'like', '%' . $keyword . '%')
-                  ->orWhere('kode_wilayah', 'like', '%' . $keyword . '%');
-            });
-        }
-
-        $wilayah = $query->orderBy('provinsi')
-            ->paginate(10)
-            ->withQueryString();
-
-        return view('data-wilayah.index', compact('wilayah'));
-    }
-}
+namespace App\Http\Controllers; use App\Models\Wilayah; use Illuminate\Http\Request; class DataWilayahFsvaController extends Controller { public function index(Request $request) { $query = Wilayah::with('parent'); if ($request->filled('cari')) { $keyword = $request->cari; $query->where(function ($q) use ($keyword) { $q->where('nama_wilayah', 'like', '%' . $keyword . '%')->orWhere('kode_wilayah', 'like', '%' . $keyword . '%'); }); } if ($request->filled('jenis')) { if ($request->jenis === 'provinsi') { $query->where('level', 1); } elseif ($request->jenis === 'kabupaten_kota') { $query->where('level', 2); } } $wilayah = $query->orderBy('kode_wilayah')->orderBy('nama_wilayah')->paginate(10)->withQueryString(); return view('data-wilayah.index', compact('wilayah')); } }
