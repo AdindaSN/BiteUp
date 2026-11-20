@@ -12,22 +12,31 @@ class PrioritasWilayahController extends Controller
 {
     public function index(Request $request)
     {
-        $tahun = $request->input('tahun', 2025);
-        $provinsiId = $request->input('provinsi_id');
-        $prioritasFilter = $request->input('prioritas');
+        $daftarTahun = DataIndikator::select('tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun');
 
-        $daftarTahun = DataIndikator::select('tahun')->distinct()->orderBy('tahun', 'desc')->pluck('tahun');
         if ($daftarTahun->isEmpty()) {
             $daftarTahun = collect([2025]);
         }
 
-        $provinsiList = Wilayah::where('level', 1)->orderBy('nama_wilayah')->get();
+        $tahun = $request->input('tahun', $daftarTahun->first() ?? 2025);
+        $provinsi = $request->input('provinsi');
+        $prioritasFilter = $request->input('prioritas');
 
-        $query = HasilIkp::with(['wilayah.parent'])->where('tahun', $tahun);
+        $provinsiList = Wilayah::select('provinsi')
+            ->whereNotNull('provinsi')
+            ->where('provinsi', '!=', '')
+            ->distinct()
+            ->orderBy('provinsi')
+            ->pluck('provinsi');
 
-        if ($provinsiId) {
-            $query->whereHas('wilayah', function ($q) use ($provinsiId) {
-                $q->where('parent_id', $provinsiId);
+        $query = HasilIkp::with('wilayah')->where('tahun', $tahun);
+
+        if ($provinsi) {
+            $query->whereHas('wilayah', function ($q) use ($provinsi) {
+                $q->where('provinsi', $provinsi);
             });
         }
 
@@ -51,7 +60,7 @@ class PrioritasWilayahController extends Controller
             $ringkasanPrioritas[$i] = 0;
             foreach ($rawRingkasan as $kat => $total) {
                 $teksKat = (string) $kat;
-                if (str_starts_with($teksKat, "Prioritas $i") or $teksKat === (string) $i) {
+                if (str_starts_with($teksKat, "Prioritas $i") || $teksKat === (string) $i) {
                     $ringkasanPrioritas[$i] += $total;
                 }
             }
@@ -62,7 +71,7 @@ class PrioritasWilayahController extends Controller
             'daftarTahun',
             'provinsiList',
             'tahun',
-            'provinsiId',
+            'provinsi',
             'prioritasFilter',
             'ringkasanPrioritas'
         ));
@@ -83,7 +92,7 @@ class PrioritasWilayahController extends Controller
                 ->selectRaw('id_wilayah, nilai as skor')
                 ->get();
         } else {
-            // Jika tidak ada kode indikator khusus 'IKP', gunakan komposit nilai dari 6 indikator yang ada
+            // Jika tidak ada kode indikator khusus 'IKP', gunakan komposit nilai dari indikator yang ada
             $dataWilayahSkor = DataIndikator::where('tahun', $tahun)
                 ->selectRaw('id_wilayah, AVG(nilai) as skor')
                 ->groupBy('id_wilayah')
