@@ -362,6 +362,21 @@
                             </a>
                         </div>
                     @endif
+                    <!-- MENU AKUN SAYA (SEMUA ROLE) -->
+                    <div class="space-y-1 pt-2 border-t border-white/10 nav-group-animate" style="animation-delay: 0.28s;">
+                        <p class="sidebar-section-title px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2 transition-opacity duration-200">
+                            Pengaturan Akun
+                        </p>
+
+                        <a href="{{ route('profile.edit') }}"
+                           title="Profil Saya"
+                           class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('profile.*') ? 'is-active bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span class="sidebar-label transition-opacity duration-200">Profil Saya</span>
+                        </a>
+                    </div>
                 @endauth
             </nav>
         </div>
@@ -386,15 +401,17 @@
 
             @auth
                 <div class="flex items-center gap-4">
-                    <div class="hidden sm:flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-full bg-[#133123] text-white flex items-center justify-center text-xs font-bold">
+                    <a href="{{ route('profile.edit') }}"
+                       class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 transition group"
+                       title="Buka Pengaturan Profil Saya">
+                        <div class="w-8 h-8 rounded-full bg-[#133123] group-hover:bg-[#2E6F40] text-white flex items-center justify-center text-xs font-bold transition">
                             {{ strtoupper(substr(Auth::user()->nama, 0, 1)) }}
                         </div>
-                        <div class="leading-tight">
-                            <span class="text-xs font-semibold text-slate-800 block">{{ Auth::user()->nama }}</span>
+                        <div class="hidden sm:block leading-tight text-left">
+                            <span class="text-xs font-semibold text-slate-800 group-hover:text-[#133123] block">{{ Auth::user()->nama }}</span>
                             <span class="text-[11px] text-slate-400">{{ Auth::user()->role->nama_role ?? 'Petugas' }}</span>
                         </div>
-                    </div>
+                    </a>
 
                     <form action="{{ route('logout') }}" method="POST" class="m-0">
                         @csrf
