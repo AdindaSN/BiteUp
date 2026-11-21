@@ -16,7 +16,10 @@ use App\Http\Controllers\DataWilayahFsvaController;
 Route::get('/', function () {
     $tahunTerbaru = \App\Models\HasilIkp::max('tahun') ?? date('Y');
     $totalWilayah = \App\Models\Wilayah::count();
-    $totalProvinsi = \App\Models\Wilayah::where('level', 1)->count();
+    $totalProvinsi = \App\Models\Wilayah::whereNotNull('provinsi')
+        ->where('provinsi', '!=', '')
+        ->distinct('provinsi')
+        ->count('provinsi');
 
     $hasilIkp = \App\Models\HasilIkp::with('wilayah')->where('tahun', $tahunTerbaru)->get();
     $rataRataIkp = $hasilIkp->avg('skor_ikp') ?? 0;
@@ -154,8 +157,13 @@ Route::middleware('auth')->group(function () {
 
         // Statistik analitik khusus Petugas Data Wilayah (Role 1)
         $totalWilayah = \App\Models\Wilayah::count();
-        $totalKabKota = \App\Models\Wilayah::where('level', 2)->count();
-        $totalProvinsi = \App\Models\Wilayah::where('level', 1)->count();
+        $totalKabKota = \App\Models\Wilayah::whereNotNull('kabupaten_kota')
+            ->where('kabupaten_kota', '!=', '')
+            ->count();
+        $totalProvinsi = \App\Models\Wilayah::whereNotNull('provinsi')
+            ->where('provinsi', '!=', '')
+            ->distinct('provinsi')
+            ->count('provinsi');
 
         $totalIndikator = \App\Models\Indikator::count();
         $totalDataIndikator = \App\Models\DataIndikator::where('tahun', $tahunFilter)->count();

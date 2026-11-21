@@ -24,33 +24,25 @@ class Wilayah extends Model
     protected $fillable = [
         'parent_id',
         'kode_wilayah',
-        'nama_wilayah',
-        'level',
-        'jumlah_penduduk',
-        'latitude',
-        'longitude',
+        'provinsi',
+        'kabupaten_kota',
+        'tahun',
     ];
 
-    public function getProvinsiAttribute(): ?string
+    // Fallback agar Blade view modul lain yang masih membaca $wilayah->nama_wilayah tetap tampil
+    public function getNamaWilayahAttribute(): ?string
     {
-        if ((int) $this->level === 1) {
-            return $this->nama_wilayah;
+        if (!empty($this->kabupaten_kota) && $this->kabupaten_kota !== '-') {
+            return $this->kabupaten_kota;
         }
-        if ((int) $this->level === 2) {
-            return $this->parent ? $this->parent->nama_wilayah : $this->nama_wilayah;
-        }
-        return ($this->parent && $this->parent->parent) ? $this->parent->parent->nama_wilayah : ($this->parent->nama_wilayah ?? $this->nama_wilayah);
+
+        return $this->provinsi;
     }
 
-    public function getKabupatenKotaAttribute(): ?string
+    // Fallback agar Blade view modul lain yang masih membaca $wilayah->level tetap jalan
+    public function getLevelAttribute(): int
     {
-        if ((int) $this->level === 2) {
-            return $this->nama_wilayah;
-        }
-        if ((int) $this->level === 3) {
-            return $this->parent ? $this->parent->nama_wilayah : '-';
-        }
-        return '-';
+        return (empty($this->kabupaten_kota) || $this->kabupaten_kota === '-') ? 1 : 2;
     }
 
     public function parent(): BelongsTo
