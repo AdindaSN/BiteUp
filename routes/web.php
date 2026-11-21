@@ -9,6 +9,7 @@ use App\Http\Controllers\ProgramSasaranController;
 use App\Http\Controllers\KelompokSasaranController;
 use App\Models\User;
 use App\Http\Controllers\PrioritasWilayahController;
+use App\Http\Controllers\HasilIdentifikasiController;
 use App\Http\Controllers\WilayahController;
 use App\Http\Controllers\DataWilayahFsvaController;
 
@@ -318,6 +319,10 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/prioritas-wilayah/proses', [PrioritasWilayahController::class, 'prosesPengelompokan'])
             ->name('prioritas-wilayah.proses');
+
+        // PBI-010: Melihat Hasil Identifikasi Wilayah Prioritas
+        Route::get('/hasil-identifikasi', [HasilIdentifikasiController::class, 'index'])
+            ->name('hasil-identifikasi.index');
     });
 
     // Pengelolaan Data Program (PBI-017 & PBI-018) - Kecuali show karena didefinisikan manual
