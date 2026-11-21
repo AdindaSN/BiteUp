@@ -91,6 +91,58 @@
             </div>
         </div>
 
+        <!-- RINGKASAN EKSEKUTIF LINTAS MODUL UNTUK ADMIN -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Wilayah Terdata</span>
+                <div class="text-3xl font-extrabold text-[#133123] mt-2">{{ number_format($totalWilayah ?? 0, 0, ',', '.') }}</div>
+                <p class="text-xs text-gray-400 mt-1">{{ $totalProvinsi ?? 0 }} Provinsi &bull; Skor IKP Rata-rata {{ number_format($rataRataIkp ?? 0, 2, ',', '.') }}</p>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Wilayah Prioritas Rentan</span>
+                <div class="text-3xl font-extrabold text-rose-600 mt-2">{{ number_format($wilayahPrioritasTinggi ?? 0, 0, ',', '.') }}</div>
+                <p class="text-xs text-gray-400 mt-1">Prioritas 1 &amp; 2 Tahun {{ $tahunFilter }}</p>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Program Bantuan</span>
+                <div class="text-3xl font-extrabold text-[#2E6F40] mt-2">{{ number_format($totalProgram ?? 0, 0, ',', '.') }}</div>
+                <p class="text-xs text-gray-400 mt-1">{{ $programAktif ?? 0 }} program aktif berjalan</p>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-gray-200/80 shadow-sm">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Target Penerima</span>
+                <div class="text-3xl font-extrabold text-[#133123] mt-2">{{ number_format($totalTargetPenerima ?? 0, 0, ',', '.') }}</div>
+                <p class="text-xs text-gray-400 mt-1">{{ $totalAlokasiTarget ?? 0 }} alokasi &bull; {{ $totalKelompokSasaran ?? 0 }} kelompok sasaran</p>
+            </div>
+        </div>
+
+        <!-- AKSES CEPAT SEMUA MODUL SISTEM -->
+        <div class="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-[#29352E]">Akses Cepat Seluruh Modul BiteUp</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Sebagai Pengelola Sistem, Anda memiliki akses penuh ke seluruh modul pengelolaan data wilayah, FSVA, program, dan pengguna.</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
+                <a href="{{ route('wilayah.index') }}" class="p-4 rounded-xl border border-gray-200 hover:border-[#2E6F40] hover:bg-emerald-50/40 transition group">
+                    <span class="font-bold text-gray-900 group-hover:text-[#133123] block">Data Wilayah &amp; FSVA</span>
+                    <span class="text-gray-500 mt-1 block">Kelola daftar kabupaten/kota &amp; indikator pangan.</span>
+                </a>
+                <a href="{{ route('hasil-identifikasi.index') }}" class="p-4 rounded-xl border border-gray-200 hover:border-[#2E6F40] hover:bg-emerald-50/40 transition group">
+                    <span class="font-bold text-gray-900 group-hover:text-[#133123] block">Prioritas &amp; Hasil IKP</span>
+                    <span class="text-gray-500 mt-1 block">Lihat hasil klasifikasi kerentanan pangan wilayah.</span>
+                </a>
+                <a href="{{ route('program.index') }}" class="p-4 rounded-xl border border-gray-200 hover:border-[#2E6F40] hover:bg-emerald-50/40 transition group">
+                    <span class="font-bold text-gray-900 group-hover:text-[#133123] block">Program &amp; Kelompok Sasaran</span>
+                    <span class="text-gray-500 mt-1 block">Kelola katalog bantuan &amp; data penerima manfaat.</span>
+                </a>
+                <a href="{{ route('target-program.index') }}" class="p-4 rounded-xl border border-gray-200 hover:border-[#2E6F40] hover:bg-emerald-50/40 transition group">
+                    <span class="font-bold text-gray-900 group-hover:text-[#133123] block">Alokasi Target Program</span>
+                    <span class="text-gray-500 mt-1 block">Tetapkan &amp; pantau capaian target per wilayah.</span>
+                </a>
+            </div>
+        </div>
+
     <!-- ========================================================================= -->
     <!-- KONTEN KHUSUS ROLE ID 1: PETUGAS DATA WILAYAH (STATISTIK & ANALITIK DATA) -->
     <!-- ========================================================================= -->

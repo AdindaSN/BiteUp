@@ -7,6 +7,7 @@ use App\Models\JenisKelompok;
 use App\Models\KelompokSasaran;
 use App\Models\Program;
 use App\Models\ProgramSasaran;
+use App\Models\RealisasiProgram;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Wilayah;
@@ -382,5 +383,139 @@ class TargetProgramTest extends TestCase
         $indexResponse = $this->actingAs($data['petugasProgram'])->get(route('target-program.index'));
         $indexResponse->assertSee('Program Bantuan Pangan Terpadu Update');
         $indexResponse->assertSee('12.500');
+    }
+
+    public function test_can_filter_target_program_by_wilayah_and_periode_and_shows_achievement_percentage(): void
+    {
+        $data = $this->setupInitialData();
+        $kelompokBogor2026 = KelompokSasaran::first();
+
+        $wilayahLain = Wilayah::create([
+            'id_wilayah' => 99,
+            'parent_id' => 1,
+            'kode_wilayah' => '3273',
+            'provinsi' => 'Jawa Barat',
+            'kabupaten_kota' => 'Kota Bandung',
+            'tahun' => 2025,
+        ]);
+
+        $kelompokBandung2025 = KelompokSasaran::create([
+            'id_wilayah' => $wilayahLain->id_wilayah,
+            'id_jenis_kelompok' => $kelompokBogor2026->id_jenis_kelompok,
+            'tahun' => 2025,
+            'jumlah' => 2000,
+        ]);
+
+        $programBandung = Program::create([
+            'id_user' => $data['petugasProgram']->id_user,
+            'id_jenis_bantuan' => $data['program']->id_jenis_bantuan,
+            'nama_program' => 'Program Khusus Bandung 2025',
+            'tanggal_mulai' => '2025-01-01',
+            'tanggal_selesai' => '2025-12-31',
+            'status' => 'Berjalan',
+        ]);
+
+        $targetBogor = ProgramSasaran::create([
+            'id_program' => $data['program']->id_program,
+            'id_kelompok' => $kelompokBogor2026->id_kelompok_sasaran,
+            'target_jumlah' => 1000,
+        ]);
+
+        RealisasiProgram::create([
+            'id_program_sasaran' => $targetBogor->id_program_sasaran,
+            'id_user' => $data['petugasProgram']->id_user,
+            'tanggal' => '2026-05-10',
+            'jumlah_realisasi' => 450,
+            'keterangan' => 'Penyaluran Tahap 1',
+        ]);
+
+        ProgramSasaran::create([
+            'id_program' => $programBandung->id_program,
+            'id_kelompok' => $kelompokBandung2025->id_kelompok_sasaran,
+            'target_jumlah' => 800,
+        ]);
+
+        // Filter berdasarkan wilayah Kota Bandung & periode 2025
+        $response = $this->actingAs($data['petugasProgram'])
+            ->get(route('target-program.index', [
+                'id_wilayah' => $wilayahLain->id_wilayah,
+                'periode' => 2025,
+            ]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Program Khusus Bandung 2025');
+        $response->assertDontSee($data['program']->nama_program);
+        $response->assertSee('0,0%');
+
+        // Filter berdasarkan wilayah Bogor & periode 2026 dengan realisasi 450/1000 = 45,0%
+        $responseBogor = $this->actingAs($data['petugasProgram'])
+            ->get(route('target-program.index', [
+                'id_wilayah' => $kelompokBogor2026->id_wilayah,
+                'periode' => 2026,
+            ]));
+
+        $responseBogor->assertStatus(200);
+        $responseBogor->assertSee($data['program']->nama_program);
+        $responseBogor->assertSee('45,0%');
+        $responseBogor->assertDontSee('Program Khusus Bandung 2025');
+    }
+
+    public function test_shows_not_found_message_when_filter_matches_no_target_program(): void
+    {
+        $data = $this->setupInitialData();
+
+        $response = $this->actingAs($data['petugasProgram'])
+            ->get(route('target-program.index', [
+                'periode' => 2099,
+            ]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Data target program tidak ditemukan');
+    }
+
+    public function test_petugas_program_can_delete_target_program_without_realisasi(): void
+    {
+        $data = $this->setupInitialData();
+        $target = ProgramSasaran::create([
+            'id_program' => $data['program']->id_program,
+            'id_kelompok' => KelompokSasaran::first()->id_kelompok_sasaran,
+            'target_jumlah' => 750,
+        ]);
+
+        $response = $this->actingAs($data['petugasProgram'])
+            ->delete(route('target-program.destroy', $target->id_program_sasaran));
+
+        $response->assertRedirect(route('target-program.index'));
+        $response->assertSessionHas('success', 'Data target program berhasil dihapus.');
+        $this->assertDatabaseMissing('program_sasaran', [
+            'id_program_sasaran' => $target->id_program_sasaran,
+        ]);
+    }
+
+    public function test_prevents_deleting_target_program_that_already_has_realisasi(): void
+    {
+        $data = $this->setupInitialData();
+        $target = ProgramSasaran::create([
+            'id_program' => $data['program']->id_program,
+            'id_kelompok' => KelompokSasaran::first()->id_kelompok_sasaran,
+            'target_jumlah' => 750,
+        ]);
+
+        RealisasiProgram::create([
+            'id_program_sasaran' => $target->id_program_sasaran,
+            'id_user' => $data['petugasProgram']->id_user,
+            'tanggal' => '2026-06-01',
+            'jumlah_realisasi' => 250,
+            'keterangan' => 'Penyaluran awal',
+        ]);
+
+        $response = $this->actingAs($data['petugasProgram'])
+            ->delete(route('target-program.destroy', $target->id_program_sasaran));
+
+        $response->assertRedirect(route('target-program.index'));
+        $response->assertSessionHas('error');
+        $this->assertDatabaseHas('program_sasaran', [
+            'id_program_sasaran' => $target->id_program_sasaran,
+        ]);
     }
 }

@@ -354,6 +354,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/target-program/{id}', [ProgramSasaranController::class, 'update'])
             ->name('target-program.update');
 
+        Route::delete('/target-program/{id}', [ProgramSasaranController::class, 'destroy'])
+            ->name('target-program.destroy');
+
         // API FSVA untuk formulir target program
         Route::get('/target-program/api/fsva', [ProgramSasaranController::class, 'getFsvaData'])
             ->name('target-program.api.fsva');

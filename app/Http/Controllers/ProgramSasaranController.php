@@ -36,9 +36,36 @@ class ProgramSasaranController extends Controller
             'program',
             'kelompokSasaran.wilayah',
             'kelompokSasaran.jenisKelompok',
+            'realisasiProgram',
         ]);
 
-        // Fitur pencarian opsional berdasarkan nama program, wilayah, atau tahun
+        // Filter berdasarkan wilayah (PBI-016)
+        if ($request->filled('id_wilayah')) {
+            $idWilayah = $request->input('id_wilayah');
+            $query->whereHas('kelompokSasaran', function ($k) use ($idWilayah) {
+                $k->where('id_wilayah', $idWilayah);
+            });
+        }
+
+        // Filter berdasarkan periode / tahun (PBI-016)
+        if ($request->filled('periode')) {
+            $periode = $request->input('periode');
+            $query->whereHas('kelompokSasaran', function ($k) use ($periode) {
+                $k->where('tahun', $periode);
+            });
+        }
+
+        // Filter opsional berdasarkan status capaian target (Tercapai / Belum Tercapai)
+        if ($request->filled('status_capaian')) {
+            $statusCapaian = $request->input('status_capaian');
+            if ($statusCapaian === 'tercapai') {
+                $query->whereRaw('(SELECT COALESCE(SUM(jumlah_realisasi), 0) FROM realisasi_program WHERE realisasi_program.id_program_sasaran = program_sasaran.id_program_sasaran) >= program_sasaran.target_jumlah');
+            } elseif ($statusCapaian === 'belum_tercapai') {
+                $query->whereRaw('(SELECT COALESCE(SUM(jumlah_realisasi), 0) FROM realisasi_program WHERE realisasi_program.id_program_sasaran = program_sasaran.id_program_sasaran) < program_sasaran.target_jumlah');
+            }
+        }
+
+        // Pencarian kata kunci opsional
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -57,7 +84,25 @@ class ProgramSasaranController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('target-program.index', compact('dataTarget'));
+        // Daftar wilayah untuk komponen filter
+        $daftarWilayah = Wilayah::where('kabupaten_kota', '!=', '-')
+            ->whereNotNull('kabupaten_kota')
+            ->orderBy('provinsi')
+            ->orderBy('kabupaten_kota')
+            ->get();
+
+        // Daftar periode (tahun) unik dari kelompok sasaran untuk komponen filter
+        $daftarPeriode = KelompokSasaran::select('tahun')
+            ->whereNotNull('tahun')
+            ->distinct()
+            ->orderByDesc('tahun')
+            ->pluck('tahun');
+
+        return view('target-program.index', compact(
+            'dataTarget',
+            'daftarWilayah',
+            'daftarPeriode'
+        ));
     }
 
     /**
@@ -282,6 +327,28 @@ class ProgramSasaranController extends Controller
         return redirect()
             ->route('target-program.index')
             ->with('success', 'Data target program berhasil diperbarui.');
+    }
+
+        /**
+     * Menghapus data target program jika belum memiliki catatan realisasi.
+     */
+    public function destroy($id)
+    {
+        $this->authorizeManageTarget();
+
+        $targetProgram = ProgramSasaran::withCount('realisasiProgram')->findOrFail($id);
+
+        if ($targetProgram->realisasi_program_count > 0) {
+            return redirect()
+                ->route('target-program.index')
+                ->with('error', 'Target program tidak dapat dihapus karena sudah memiliki catatan realisasi penyaluran.');
+        }
+
+        $targetProgram->delete();
+
+        return redirect()
+            ->route('target-program.index')
+            ->with('success', 'Data target program berhasil dihapus.');
     }
 
     public function getFsvaData(Request $request)
