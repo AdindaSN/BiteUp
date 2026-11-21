@@ -74,33 +74,81 @@
 
     <!-- Main Content Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <!-- Search and Filter Bar -->
-        <div class="p-4 sm:p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <form action="{{ route('program.index') }}" method="GET" class="relative w-full sm:w-80">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                </span>
-                <input
-                    type="text"
-                    name="search"
-                    value="{{ $search ?? '' }}"
-                    placeholder="Cari program atau wilayah..."
-                    class="w-full pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition"
-                >
-                @if(!empty($search))
-                    <a href="{{ route('program.index') }}" class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-gray-400 hover:text-gray-600" title="Hapus pencarian">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </a>
-                @endif
-            </form>
+        
+        <!-- Search, Filter & Sort Bar -->
+        <div class="p-4 sm:p-5 border-b border-gray-100">
+            <form action="{{ route('program.index') }}" method="GET" class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                
+                <!-- Search & Filters Group -->
+                <div class="flex flex-col sm:flex-row items-center gap-3 flex-1 w-full">
+                    
+                    <!-- Search Input -->
+                    <div class="relative w-full sm:w-72">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ $search ?? '' }}"
+                            placeholder="Cari program, PJ, instansi, wilayah..."
+                            class="w-full pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition"
+                        >
+                    </div>
 
-            <div class="text-xs text-gray-500">
-                Total: <span class="font-semibold text-gray-700">{{ $programs->count() }}</span> Program Terdaftar
-            </div>
+                    <!-- Filter Status -->
+                    <div class="w-full sm:w-40">
+                        <select
+                            name="status"
+                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition"
+                        >
+                            <option value="">-- Status --</option>
+                            <option value="Aktif" @selected(($status ?? '') == 'Aktif')>Aktif</option>
+                            <option value="Berjalan" @selected(($status ?? '') == 'Berjalan')>Berjalan</option>
+                            <option value="Selesai" @selected(($status ?? '') == 'Selesai')>Selesai</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div class="w-full sm:w-40">
+                        <select
+                            name="sort"
+                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition"
+                        >
+                            <option value="latest" @selected(($sort ?? 'latest') == 'latest')>Terbaru</option>
+                            <option value="oldest" @selected(($sort ?? '') == 'oldest')>Terlama</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter & Reset Buttons -->
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition shadow-xs flex-1 sm:flex-none"
+                        >
+                            Filter
+                        </button>
+                        @if(!empty($search) || !empty($status) || ($sort ?? 'latest') !== 'latest')
+                            <a
+                                href="{{ route('program.index') }}"
+                                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition text-center"
+                                title="Reset Filter"
+                            >
+                                Reset
+                            </a>
+                        @endif
+                    </div>
+
+                </div>
+
+                <!-- Total Count Info -->
+                <div class="text-xs text-gray-500 whitespace-nowrap self-end lg:self-center">
+                    Total: <span class="font-semibold text-gray-700">{{ $programs->count() }}</span> Program Terdaftar
+                </div>
+
+            </form>
         </div>
 
         <!-- Program Table -->
@@ -112,8 +160,8 @@
                         <th scope="col" class="py-3.5 px-4">Nama Program</th>
                         <th scope="col" class="py-3.5 px-4">Kategori</th>
                         <th scope="col" class="py-3.5 px-4">Wilayah</th>
+                        <th scope="col" class="py-3.5 px-4">Penanggung Jawab</th>
                         <th scope="col" class="py-3.5 px-4">Rencana Pelaksanaan</th>
-                        <th scope="col" class="py-3.5 px-6">Deskripsi</th>
                         <th scope="col" class="py-3.5 px-4 text-center">Status</th>
                         <th scope="col" class="py-3.5 px-4 text-center w-32">Aksi</th>
                     </tr>
@@ -139,11 +187,15 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         </svg>
-                                        {{ $program->wilayah->nama_wilayah }}
+                                        {{ $program->wilayah->nama_wilayah ?? $program->wilayah->kabupaten_kota ?? '-' }}
                                     </span>
                                 @else
                                     <span class="text-gray-400 italic">-</span>
                                 @endif
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                <span class="font-medium text-gray-800 block">{{ $program->nama_penanggung_jawab ?? '-' }}</span>
+                                <span class="text-xs text-gray-400 block">{{ $program->instansi ?? '-' }}</span>
                             </td>
                             <td class="py-3.5 px-4 whitespace-nowrap text-gray-600">
                                 @if($program->tanggal_pelaksanaan)
@@ -164,17 +216,22 @@
                                     <span class="text-gray-400 italic">-</span>
                                 @endif
                             </td>
-                            <td class="py-3.5 px-6 text-gray-600 min-w-[200px]">
-                                {{ $program->deskripsi ?? '-' }}
-                            </td>
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#D1FAE5] text-[#065F46] border border-emerald-200">
+                                @php
+                                    $badgeClass = match($program->status) {
+                                        'Aktif' => 'bg-[#D1FAE5] text-[#065F46] border-emerald-200',
+                                        'Berjalan' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                        'Selesai' => 'bg-gray-100 text-gray-800 border-gray-200',
+                                        default => 'bg-gray-100 text-gray-800 border-gray-200',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border {{ $badgeClass }}">
                                     {{ $program->status ?? 'Aktif' }}
                                 </span>
                             </td>
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1.5 justify-center">
-                                    <!-- View Detail Action Icon (Emerald) -->
+                                    <!-- View Detail Action Icon -->
                                     <a
                                         href="{{ route('program.show', $program->id_program) }}"
                                         class="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors"
@@ -186,7 +243,7 @@
                                         </svg>
                                     </a>
 
-                                    <!-- Edit Action Icon (Blue) -->
+                                    <!-- Edit Action Icon -->
                                     <a
                                         href="{{ route('program.edit', $program->id_program) }}"
                                         class="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
@@ -197,7 +254,7 @@
                                         </svg>
                                     </a>
 
-                                    <!-- Delete Action Icon (Red) -->
+                                    <!-- Delete Action Icon -->
                                     <button
                                         type="button"
                                         onclick="openDeleteModal('{{ $program->id_program }}', '{{ addslashes($program->nama_program) }}')"
@@ -246,7 +303,7 @@
             </p>
             <p class="text-xs text-red-500 text-center mt-1">Data yang dihapus tidak dapat dipulihkan kembali.</p>
         </div>
-        <div class="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-100">
+        <div class="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-tertiary border-t border-gray-100">
             <button
                 type="button"
                 onclick="closeDeleteModal()"

@@ -26,6 +26,8 @@ class ProgramController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('nama_program', 'like', "%{$search}%")
                   ->orWhere('deskripsi', 'like', "%{$search}%")
+                  ->orWhere('nama_penanggung_jawab', 'like', "%{$search}%")
+                  ->orWhere('instansi', 'like', "%{$search}%")
                   ->orWhereHas('jenisBantuan', function ($jb) use ($search) {
                       $jb->where('nama_bantuan', 'like', "%{$search}%");
                   })
@@ -85,6 +87,8 @@ class ProgramController extends Controller
             'tanggal_selesai' => ['nullable', 'date', 'after_or_equal:tanggal_pelaksanaan'],
             'status' => ['required', 'string', 'in:Aktif,Berjalan,Selesai'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'nama_penanggung_jawab' => ['nullable', 'string', 'max:150'],
+            'instansi' => ['nullable', 'string', 'max:150'],
         ], [
             'nama_program.required' => 'Nama program wajib diisi.',
             'id_jenis_bantuan.required' => 'Jenis program wajib dipilih.',
@@ -107,6 +111,8 @@ class ProgramController extends Controller
             'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
             'status' => $validated['status'],
             'deskripsi' => $validated['deskripsi'] ?? null,
+            'nama_penanggung_jawab' => $validated['nama_penanggung_jawab'] ?? null,
+            'instansi' => $validated['instansi'] ?? null,
             'id_user' => $userId,
         ]);
 
@@ -159,6 +165,8 @@ class ProgramController extends Controller
             'tanggal_selesai' => ['nullable', 'date', 'after_or_equal:tanggal_pelaksanaan'],
             'status' => ['required', 'string', 'in:Aktif,Berjalan,Selesai'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'nama_penanggung_jawab' => ['nullable', 'string', 'max:150'],
+            'instansi' => ['nullable', 'string', 'max:150'],
         ], [
             'nama_program.required' => 'Nama program wajib diisi.',
             'id_jenis_bantuan.required' => 'Jenis program wajib dipilih.',
@@ -177,6 +185,8 @@ class ProgramController extends Controller
             'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
             'status' => $validated['status'],
             'deskripsi' => $validated['deskripsi'] ?? null,
+            'nama_penanggung_jawab' => $validated['nama_penanggung_jawab'] ?? null,
+            'instansi' => $validated['instansi'] ?? null,
         ]);
 
         return redirect()

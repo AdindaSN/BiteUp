@@ -14,7 +14,6 @@ class Program extends Model
     protected $table = 'program';
     protected $primaryKey = 'id_program';
     
-    // 👇 TARUH DI SINI (Di atas protected $fillable) 👇
     public $timestamps = true;
 
     protected $fillable = [
@@ -27,6 +26,8 @@ class Program extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'status',
+        'nama_penanggung_jawab',
+        'instansi',
     ];
 
     protected $attributes = [

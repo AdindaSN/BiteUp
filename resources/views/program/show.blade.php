@@ -76,9 +76,28 @@
                         </svg>
                         <span>
                             @if($program->wilayah)
-                                {{ $program->wilayah->kabupaten_kota ?? $program->wilayah->nama_wilayah ?? '-' }}
-                                @if(isset($program->wilayah->provinsi) && $program->wilayah->provinsi != '-')
-                                    <span class="text-gray-500 font-normal">({{ $program->wilayah->provinsi }})</span>
+                                @php
+                                    $rawWilayah = $program->wilayah->kabupaten_kota 
+                                        ?? $program->wilayah->nama_wilayah 
+                                        ?? $program->wilayah->nama_kabupaten 
+                                        ?? $program->wilayah->name 
+                                        ?? '';
+                                    
+                                    $cleanedWilayah = trim(str_replace('-', '', $rawWilayah));
+                                    
+                                    $rawProvinsi = $program->wilayah->provinsi ?? '';
+                                    $cleanedProvinsi = trim(str_replace('-', '', $rawProvinsi));
+                                @endphp
+
+                                @if($cleanedWilayah !== '')
+                                    {{ $cleanedWilayah }}
+                                    @if($cleanedProvinsi !== '')
+                                        <span class="text-gray-500 font-normal">({{ $cleanedProvinsi }})</span>
+                                    @endif
+                                @elseif($cleanedProvinsi !== '')
+                                    <span>{{ $cleanedProvinsi }}</span>
+                                @else
+                                    <span class="text-gray-400 italic">Wilayah tidak ditentukan</span>
                                 @endif
                             @else
                                 <span class="text-gray-400 italic">Wilayah tidak ditentukan</span>
@@ -108,15 +127,30 @@
                 </div>
             </div>
 
-            <!-- Kolom Kanan: Petugas & Terakhir Diperbarui -->
+            <!-- Kolom Kanan: Petugas, Penanggung Jawab, Instansi & Terakhir Diperbarui -->
             <div class="space-y-5">
                 <div>
-                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Petugas Penanggung Jawab</span>
+                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Petugas Sistem (Pencatat)</span>
                     <div class="text-sm font-semibold text-gray-800 mt-1 flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                         <span>{{ $program->user->name ?? $program->user->email ?? 'Administrator / Petugas' }}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Penanggung Jawab</span>
+                        <div class="text-sm font-semibold text-gray-800 mt-1">
+                            {{ $program->nama_penanggung_jawab ?? '-' }}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Instansi</span>
+                        <div class="text-sm font-semibold text-gray-800 mt-1">
+                            {{ $program->instansi ?? '-' }}
+                        </div>
                     </div>
                 </div>
 
