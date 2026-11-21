@@ -20,11 +20,14 @@ class ProgramController extends Controller
     {
         $query = Program::with(['jenisBantuan', 'wilayah']);
 
+        // 1. Logika Pencarian (Search)
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('nama_program', 'like', "%{$search}%")
                   ->orWhere('deskripsi', 'like', "%{$search}%")
+                  ->orWhere('nama_penanggung_jawab', 'like', "%{$search}%")
+                  ->orWhere('instansi', 'like', "%{$search}%")
                   ->orWhereHas('jenisBantuan', function ($jb) use ($search) {
                       $jb->where('nama_bantuan', 'like', "%{$search}%");
                   })
@@ -34,11 +37,26 @@ class ProgramController extends Controller
             });
         }
 
-        $programs = $query->orderBy('id_program', 'asc')->get();
+        // 2. Logika Filter Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // 3. Logika Sorting Berdasarkan Tanggal Mulai / Pelaksanaan
+        $sort = $request->input('sort', 'latest'); // Default: terbaru
+        if ($sort == 'oldest') {
+            $query->orderBy('tanggal_pelaksanaan', 'asc');
+        } else {
+            $query->orderBy('tanggal_pelaksanaan', 'desc');
+        }
+
+        $programs = $query->get();
 
         return view('program.index', [
             'programs' => $programs,
             'search' => $request->input('search', ''),
+            'status' => $request->input('status', ''),
+            'sort' => $sort,
         ]);
     }
 
@@ -66,19 +84,18 @@ class ProgramController extends Controller
             'id_jenis_bantuan' => ['required', 'exists:jenis_bantuan,id_jenis_bantuan'],
             'id_wilayah' => ['required', 'exists:wilayah,id_wilayah'],
             'tanggal_pelaksanaan' => ['required', 'date'],
+            'tanggal_selesai' => ['nullable', 'date', 'after_or_equal:tanggal_pelaksanaan'],
+            'status' => ['required', 'string', 'in:Aktif,Berjalan,Selesai'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'nama_penanggung_jawab' => ['nullable', 'string', 'max:150'],
+            'instansi' => ['nullable', 'string', 'max:150'],
         ], [
             'nama_program.required' => 'Nama program wajib diisi.',
-            'nama_program.string' => 'Nama program harus berupa teks.',
-            'nama_program.max' => 'Nama program tidak boleh lebih dari 150 karakter.',
             'id_jenis_bantuan.required' => 'Jenis program wajib dipilih.',
-            'id_jenis_bantuan.exists' => 'Jenis program yang dipilih tidak valid.',
             'id_wilayah.required' => 'Wilayah yang dituju wajib dipilih.',
-            'id_wilayah.exists' => 'Wilayah yang dipilih tidak valid.',
             'tanggal_pelaksanaan.required' => 'Rencana tanggal pelaksanaan wajib diisi.',
-            'tanggal_pelaksanaan.date' => 'Format tanggal pelaksanaan tidak valid.',
-            'deskripsi.string' => 'Deskripsi program harus berupa teks.',
-            'deskripsi.max' => 'Deskripsi program tidak boleh lebih dari 1000 karakter.',
+            'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus sama atau setelah tanggal pelaksanaan.',
+            'status.required' => 'Status program wajib dipilih.',
         ]);
 
         $userId = Auth::id()
@@ -91,14 +108,30 @@ class ProgramController extends Controller
             'id_wilayah' => $validated['id_wilayah'],
             'tanggal_pelaksanaan' => $validated['tanggal_pelaksanaan'],
             'tanggal_mulai' => $validated['tanggal_pelaksanaan'],
+            'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+            'status' => $validated['status'],
             'deskripsi' => $validated['deskripsi'] ?? null,
-            'status' => 'Aktif',
+            'nama_penanggung_jawab' => $validated['nama_penanggung_jawab'] ?? null,
+            'instansi' => $validated['instansi'] ?? null,
             'id_user' => $userId,
         ]);
 
         return redirect()
             ->route('program.index')
             ->with('success', 'Data program bantuan berhasil ditambahkan.');
+    }
+
+    /**
+     * Display the specified program detail.
+     */
+    public function show(int $id): View
+    {
+        // Mengambil data program beserta relasi wilayah, jenisBantuan, dan user
+        $program = Program::with(['jenisBantuan', 'wilayah', 'user'])->findOrFail($id);
+
+        return view('program.show', [
+            'program' => $program,
+        ]);
     }
 
     /**
@@ -129,19 +162,18 @@ class ProgramController extends Controller
             'id_jenis_bantuan' => ['required', 'exists:jenis_bantuan,id_jenis_bantuan'],
             'id_wilayah' => ['required', 'exists:wilayah,id_wilayah'],
             'tanggal_pelaksanaan' => ['required', 'date'],
+            'tanggal_selesai' => ['nullable', 'date', 'after_or_equal:tanggal_pelaksanaan'],
+            'status' => ['required', 'string', 'in:Aktif,Berjalan,Selesai'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'nama_penanggung_jawab' => ['nullable', 'string', 'max:150'],
+            'instansi' => ['nullable', 'string', 'max:150'],
         ], [
             'nama_program.required' => 'Nama program wajib diisi.',
-            'nama_program.string' => 'Nama program harus berupa teks.',
-            'nama_program.max' => 'Nama program tidak boleh lebih dari 150 karakter.',
             'id_jenis_bantuan.required' => 'Jenis program wajib dipilih.',
-            'id_jenis_bantuan.exists' => 'Jenis program yang dipilih tidak valid.',
             'id_wilayah.required' => 'Wilayah yang dituju wajib dipilih.',
-            'id_wilayah.exists' => 'Wilayah yang dipilih tidak valid.',
             'tanggal_pelaksanaan.required' => 'Rencana tanggal pelaksanaan wajib diisi.',
-            'tanggal_pelaksanaan.date' => 'Format tanggal pelaksanaan tidak valid.',
-            'deskripsi.string' => 'Deskripsi program harus berupa teks.',
-            'deskripsi.max' => 'Deskripsi program tidak boleh lebih dari 1000 karakter.',
+            'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus sama atau setelah tanggal pelaksanaan.',
+            'status.required' => 'Status program wajib dipilih.',
         ]);
 
         $program->update([
@@ -150,7 +182,11 @@ class ProgramController extends Controller
             'id_wilayah' => $validated['id_wilayah'],
             'tanggal_pelaksanaan' => $validated['tanggal_pelaksanaan'],
             'tanggal_mulai' => $validated['tanggal_pelaksanaan'],
+            'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+            'status' => $validated['status'],
             'deskripsi' => $validated['deskripsi'] ?? null,
+            'nama_penanggung_jawab' => $validated['nama_penanggung_jawab'] ?? null,
+            'instansi' => $validated['instansi'] ?? null,
         ]);
 
         return redirect()

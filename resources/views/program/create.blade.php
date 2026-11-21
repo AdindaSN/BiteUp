@@ -169,12 +169,61 @@
                 </div>
             </div>
 
-            <!-- 4. Rencana Tanggal Pelaksanaan -->
-            <div>
-                <label for="tanggal_pelaksanaan" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Rencana Tanggal Pelaksanaan <span class="text-red-500">*</span>
-                </label>
-                <div class="relative max-w-md">
+            <!-- 4. Informasi Penanggung Jawab & Instansi -->
+            <div class="p-5 bg-gray-50 rounded-xl border border-gray-200/75 space-y-4">
+                <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span>Informasi Penanggung Jawab</span>
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Nama Penanggung Jawab -->
+                    <div>
+                        <label for="nama_penanggung_jawab" class="block text-xs font-semibold text-gray-700 mb-1">
+                            Nama Penanggung Jawab
+                        </label>
+                        <input
+                            type="text"
+                            name="nama_penanggung_jawab"
+                            id="nama_penanggung_jawab"
+                            value="{{ old('nama_penanggung_jawab') }}"
+                            placeholder="Masukkan nama lengkap"
+                            class="w-full px-4 py-2 bg-white border @error('nama_penanggung_jawab') border-red-400 bg-red-50/20 text-red-900 focus:ring-red-400 @else border-gray-300 text-gray-800 focus:ring-[#10B981] focus:border-[#10B981] @enderror rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition shadow-sm"
+                        >
+                        @error('nama_penanggung_jawab')
+                            <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Instansi -->
+                    <div>
+                        <label for="instansi" class="block text-xs font-semibold text-gray-700 mb-1">
+                            Instansi
+                        </label>
+                        <input
+                            type="text"
+                            name="instansi"
+                            id="instansi"
+                            value="{{ old('instansi') }}"
+                            placeholder="Masukkan nama instansi"
+                            class="w-full px-4 py-2 bg-white border @error('instansi') border-red-400 bg-red-50/20 text-red-900 focus:ring-red-400 @else border-gray-300 text-gray-800 focus:ring-[#10B981] focus:border-[#10B981] @enderror rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition shadow-sm"
+                        >
+                        @error('instansi')
+                            <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Grid Tanggal & Status Program -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Tanggal Mulai / Pelaksanaan -->
+                <div>
+                    <label for="tanggal_pelaksanaan" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Tanggal Pelaksanaan <span class="text-red-500">*</span>
+                    </label>
                     <input
                         type="date"
                         name="tanggal_pelaksanaan"
@@ -183,20 +232,56 @@
                         required
                         class="w-full px-4 py-2.5 bg-white border @error('tanggal_pelaksanaan') border-red-400 bg-red-50/20 text-red-900 focus:ring-red-400 @else border-gray-300 text-gray-800 focus:ring-[#10B981] focus:border-[#10B981] @enderror rounded-lg text-sm focus:outline-none focus:ring-2 transition shadow-sm"
                     >
+                    @error('tanggal_pelaksanaan')
+                        <p class="text-red-500 text-xs mt-1.5 font-medium">{{ $message }}</p>
+                    @else
+                        <p class="text-xs text-gray-400 mt-1">Tanggal mulai program.</p>
+                    @enderror
                 </div>
-                @error('tanggal_pelaksanaan')
-                    <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1 font-medium">
-                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <span>{{ $message }}</span>
-                    </p>
-                @else
-                    <p class="text-xs text-gray-400 mt-1">Tentukan tanggal rencana dimulainya pelaksanaan program bantuan.</p>
-                @enderror
+
+                <!-- Tanggal Selesai -->
+                <div>
+                    <label for="tanggal_selesai" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Tanggal Selesai
+                    </label>
+                    <input
+                        type="date"
+                        name="tanggal_selesai"
+                        id="tanggal_selesai"
+                        value="{{ old('tanggal_selesai') }}"
+                        class="w-full px-4 py-2.5 bg-white border @error('tanggal_selesai') border-red-400 bg-red-50/20 text-red-900 focus:ring-red-400 @else border-gray-300 text-gray-800 focus:ring-[#10B981] focus:border-[#10B981] @enderror rounded-lg text-sm focus:outline-none focus:ring-2 transition shadow-sm"
+                    >
+                    @error('tanggal_selesai')
+                        <p class="text-red-500 text-xs mt-1.5 font-medium">{{ $message }}</p>
+                    @else
+                        <p class="text-xs text-gray-400 mt-1">Opsional (batas akhir program).</p>
+                    @enderror
+                </div>
+
+                <!-- Status Program -->
+                <div>
+                    <label for="status" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Status Program <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                        name="status"
+                        id="status"
+                        required
+                        class="w-full px-4 py-2.5 bg-white border @error('status') border-red-400 bg-red-50/20 text-red-900 focus:ring-red-400 @else border-gray-300 text-gray-800 focus:ring-[#10B981] focus:border-[#10B981] @enderror rounded-lg text-sm focus:outline-none focus:ring-2 transition shadow-sm"
+                    >
+                        <option value="Aktif" @selected(old('status') == 'Aktif')>Aktif</option>
+                        <option value="Berjalan" @selected(old('status') == 'Berjalan')>Berjalan</option>
+                        <option value="Selesai" @selected(old('status') == 'Selesai')>Selesai</option>
+                    </select>
+                    @error('status')
+                        <p class="text-red-500 text-xs mt-1.5 font-medium">{{ $message }}</p>
+                    @else
+                        <p class="text-xs text-gray-400 mt-1">Status aktif/berjalannya program.</p>
+                    @enderror
+                </div>
             </div>
 
-            <!-- 5. Deskripsi Program -->
+            <!-- 6. Deskripsi Program -->
             <div>
                 <label for="deskripsi" class="block text-sm font-semibold text-gray-700 mb-1.5">
                     Deskripsi Program

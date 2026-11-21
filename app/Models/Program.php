@@ -13,7 +13,8 @@ class Program extends Model
 
     protected $table = 'program';
     protected $primaryKey = 'id_program';
-    public $timestamps = false;
+    
+    public $timestamps = true;
 
     protected $fillable = [
         'id_user',
@@ -25,6 +26,8 @@ class Program extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'status',
+        'nama_penanggung_jawab',
+        'instansi',
     ];
 
     protected $attributes = [
@@ -37,6 +40,8 @@ class Program extends Model
             'tanggal_pelaksanaan' => 'date',
             'tanggal_mulai' => 'date',
             'tanggal_selesai' => 'date',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 

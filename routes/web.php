@@ -312,8 +312,11 @@ Route::middleware('auth')->group(function () {
             ->name('prioritas-wilayah.proses');
     });
 
-    // Pengelolaan Data Program (PBI-017 & PBI-018)
+    // Pengelolaan Data Program (PBI-017 & PBI-018) - Kecuali show karena didefinisikan manual
     Route::resource('program', ProgramController::class)->except(['show']);
+
+    // PBI-019: Route Detail / Show Program Bantuan
+    Route::get('/program/{id}', [ProgramController::class, 'show'])->name('program.show');
 
     // PBI-018: Route khusus eksplisit untuk Edit & Update Program Bantuan (jika dibutuhkan terpisah)
     Route::middleware('role:3,4')->group(function () {
