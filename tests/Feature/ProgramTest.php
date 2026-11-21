@@ -79,6 +79,7 @@ class ProgramTest extends TestCase
             'id_wilayah' => $wilayah->id_wilayah,
             'tanggal_pelaksanaan' => '2026-06-15',
             'deskripsi' => 'Penyaluran beras kualitas premium untuk 50.000 KK di Jawa Barat.',
+            'status' => 'Aktif',
         ];
 
         $response = $this->post('/program', $payload);
@@ -174,6 +175,7 @@ class ProgramTest extends TestCase
             'id_wilayah' => $wilayahBaru->id_wilayah,
             'tanggal_pelaksanaan' => '2026-09-10 00:00:00',
             'deskripsi' => 'Deskripsi yang telah diperbarui oleh Admin.',
+            'status' => 'Aktif',
         ];
 
         $response = $this->put(route('program.update', $program->id_program), $updatePayload);
