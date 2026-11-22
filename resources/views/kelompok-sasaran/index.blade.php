@@ -15,38 +15,153 @@
     ];
     $canManage = in_array((int) Auth::user()->id_roles, [3, 4]);
 @endphp
+
     <style>
-        .ks-header-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-        .ks-toolbar { display: flex; align-items: center; gap: 10px; flex: 1; margin-bottom: 0; }
-        .ks-search { flex: 1; max-width: 380px; }
-        .ks-search input {
-            width: 100%; padding: 10px 14px 10px 38px; font-size: 14px;
-            border: 1px solid #d1d5db; border-radius: 8px; background-color: #fff;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7280' stroke-width='2' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><path d='m20 20-3.5-3.5'/></svg>");
-            background-repeat: no-repeat; background-position: 12px center;
+        .ks-top-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
-        .ks-search input:focus { outline: 2px solid #86efac; border-color: #22c55e; }
-        .ks-reset { text-decoration: none; display: inline-block; }
+        .ks-breadcrumb {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ks-heading {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.25;
+            margin: 0;
+        }
+        .ks-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+        .ks-toolbar-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .ks-search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 260px;
+        }
+        .ks-search {
+            flex: 1;
+            max-width: 380px;
+        }
+        .ks-search input {
+            width: 100%;
+            padding: 9px 14px 9px 38px;
+            font-size: 13.5px;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background-color: #fff;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239ca3af' stroke-width='2' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><path d='m20 20-3.5-3.5'/></svg>");
+            background-repeat: no-repeat;
+            background-position: 12px center;
+        }
+        .ks-search input:focus {
+            outline: none;
+            border-color: #315B46;
+            box-shadow: 0 0 0 3px rgba(49, 91, 70, 0.12);
+        }
+        .ks-btn-filter {
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #ffffff;
+            background: #1f2937;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .ks-btn-filter:hover { background: #111827; }
+        .ks-btn-reset {
+            padding: 9px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4b5563;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            text-decoration: none;
+        }
+        .ks-btn-reset:hover { background: #e5e7eb; }
+        .ks-total-badge {
+            font-size: 13px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+        .ks-total-badge strong {
+            color: #111827;
+            font-weight: 700;
+        }
 
         .ks-wrap { overflow-x: auto; }
-        .ks-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px;
-                    border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
-        .ks-table th { text-align: left; background: #e8f3ec; color: #0f4c3a; font-weight: 600;
-                       padding: 12px 14px; border-bottom: 1px solid #d5e8dc; white-space: nowrap; }
-        .ks-table td { padding: 12px 14px; border-top: 1px solid #eef0ee; }
+        .ks-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .ks-table th {
+            text-align: left;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-weight: 700;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .ks-table td {
+            padding: 13px 14px;
+            border-top: 1px solid #f1f5f9;
+            color: #1f2937;
+        }
         .ks-table tbody tr:first-child td { border-top: 0; }
-        .ks-table tbody tr:nth-child(even) td { background: #fafcfb; }
-        .ks-table tbody tr:hover td { background: #f0f7f2; }
-        .ks-num { text-align: right !important; font-variant-numeric: tabular-nums; }
+        .ks-table tbody tr:hover td { background: #f8fafc; }
+        .ks-num { text-align: right !important; font-variant-numeric: tabular-nums; font-weight: 600; }
         .ks-center { text-align: center !important; }
-        .ks-badge { display: inline-block; padding: 3px 10px; border-radius: 999px;
-                    background: #dcfce7; color: #166534; font-size: 13px; font-weight: 600; }
-                    .ks-amber  { background: #fef3c7; color: #92400e; }
-                    .ks-pink   { background: #fce7f3; color: #9d174d; }
-                    .ks-blue   { background: #dbeafe; color: #1e40af; }
-                    .ks-purple { background: #ede9fe; color: #5b21b6; }
-                    .ks-teal   { background: #ccfbf1; color: #115e59; }
-                    .ks-green  { background: #dcfce7; color: #166534; }
+        .ks-badge {
+            display: inline-block;
+            padding: 4px 11px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+        .ks-amber  { background: #fef3c7; color: #92400e; }
+        .ks-pink   { background: #fce7f3; color: #9d174d; }
+        .ks-blue   { background: #dbeafe; color: #1e40af; }
+        .ks-purple { background: #ede9fe; color: #5b21b6; }
+        .ks-teal   { background: #ccfbf1; color: #115e59; }
+        .ks-green  { background: #dcfce7; color: #166534; }
         .ks-empty { text-align: center; padding: 36px 14px !important; color: #6b7280; }
         .ks-actions { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         .ks-btn-edit {
@@ -65,8 +180,27 @@
         .ks-btn-delete:hover { background: #fee2e2; color: #b91c1c; }
     </style>
 
-    <h1 class="page-title">Data Kelompok Sasaran</h1>
-    <div class="breadcrumb">Beranda &gt; Kelompok Sasaran</div>
+    <!-- HEADER HALAMAN SEJAJAR DENGAN TOMBOL TAMBAH (SAMA SEPERTI DATA PROGRAM) -->
+    <div class="ks-top-header">
+        <div>
+            <div class="ks-breadcrumb">
+                <span>Beranda</span>
+                <span>&rsaquo;</span>
+                <span style="color: #374151; font-weight: 500;">Kelompok Sasaran</span>
+            </div>
+            <h1 class="ks-heading">Data Kelompok Sasaran</h1>
+        </div>
+
+        @if($canManage)
+            <a href="{{ route('kelompok-sasaran.create') }}"
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#5D8A66] hover:bg-[#4b7253] shadow-sm transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Tambah Kelompok Sasaran</span>
+            </a>
+        @endif
+    </div>
 
     @if(session('success'))
         <div class="mb-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-medium flex items-center gap-2 shadow-sm">
@@ -86,27 +220,21 @@
         </div>
     @endif
 
-    <div class="card">
-        <div class="ks-header-bar">
-            <form method="GET" class="ks-toolbar">
+    <div class="ks-card">
+        <div class="ks-toolbar-row">
+            <form method="GET" class="ks-search-form">
                 <div class="ks-search">
                     <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari kelompok sasaran atau wilayah...">
                 </div>
-                <button type="submit" class="btn btn-primary">Cari</button>
+                <button type="submit" class="ks-btn-filter">Cari</button>
                 @if (request('q'))
-                    <a href="{{ route('kelompok-sasaran.index') }}" class="btn btn-light ks-reset">Reset</a>
+                    <a href="{{ route('kelompok-sasaran.index') }}" class="ks-btn-reset">Reset</a>
                 @endif
             </form>
 
-            @if($canManage)
-                <a href="{{ route('kelompok-sasaran.create') }}"
-                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#315B46] hover:bg-[#264837] shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span>Tambah Kelompok Sasaran</span>
-                </a>
-            @endif
+            <div class="ks-total-badge">
+                Total: <strong>{{ $kelompok->total() }}</strong> Kelompok Sasaran
+            </div>
         </div>
 
         <div class="ks-wrap">
@@ -178,7 +306,9 @@
             </table>
         </div>
 
-        {{ $kelompok->links('vendor.pagination.biteup') }}
+        <div style="margin-top: 16px;">
+            {{ $kelompok->links('vendor.pagination.biteup') }}
+        </div>
     </div>
 
     <!-- MODAL KONFIRMASI HAPUS -->
