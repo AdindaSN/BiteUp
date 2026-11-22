@@ -169,7 +169,7 @@ Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
             'totalKelompokSasaran',
             'totalPendudukRentan',
             'wilayahTerjangkau',
-            'ringkasanPrioritas', // Variabel PBI-007 ditambahkan di sini
+            'ringkasanPrioritas',
             'petaProvinsi',
             'targetProgramTerbaru',
             'totalWilayah',
