@@ -43,8 +43,11 @@ class KelompokSasaranController extends Controller
 
     public function create()
     {
-        $daftarWilayah = Wilayah::orderBy('kabupaten_kota')->get();
-        $daftarJenis   = JenisKelompok::orderBy('nama_jenis')->get();
+        $daftarWilayah = Wilayah::orderBy('provinsi')
+            ->orderByRaw("CASE WHEN kabupaten_kota = '-' OR kabupaten_kota IS NULL THEN 0 ELSE 1 END")
+            ->orderBy('kabupaten_kota')
+            ->get();
+        $daftarJenis = JenisKelompok::orderBy('nama_jenis')->get();
 
         return view('kelompok-sasaran.create', compact('daftarWilayah', 'daftarJenis'));
     }
@@ -74,8 +77,11 @@ class KelompokSasaranController extends Controller
 
     public function edit(KelompokSasaran $kelompokSasaran)
     {
-        $daftarWilayah = Wilayah::orderBy('kabupaten_kota')->get();
-        $daftarJenis   = JenisKelompok::orderBy('nama_jenis')->get();
+        $daftarWilayah = Wilayah::orderBy('provinsi')
+            ->orderByRaw("CASE WHEN kabupaten_kota = '-' OR kabupaten_kota IS NULL THEN 0 ELSE 1 END")
+            ->orderBy('kabupaten_kota')
+            ->get();
+        $daftarJenis = JenisKelompok::orderBy('nama_jenis')->get();
 
         return view('kelompok-sasaran.edit', compact('kelompokSasaran', 'daftarWilayah', 'daftarJenis'));
     }
