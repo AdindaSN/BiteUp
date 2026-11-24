@@ -59,12 +59,28 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
             flex: 1;
             min-width: 260px;
         }
+        .ks-select {
+            padding: 9px 12px;
+            font-size: 13.5px;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .ks-select:focus {
+            outline: none;
+            border-color: #315B46;
+            box-shadow: 0 0 0 3px rgba(49, 91, 70, 0.12);
+        }
         .ks-search {
             flex: 1;
-            max-width: 380px;
+            min-width: 200px;
+            max-width: 300px;
         }
         .ks-search input {
             width: 100%;
@@ -180,7 +196,7 @@
         .ks-btn-delete:hover { background: #fee2e2; color: #b91c1c; }
     </style>
 
-    <!-- HEADER HALAMAN SEJAJAR DENGAN TOMBOL TAMBAH -->
+    <!-- HEADER HALAMAN -->
     <div class="ks-top-header">
         <div>
             <div class="ks-breadcrumb">
@@ -229,11 +245,36 @@
     <div class="ks-card">
         <div class="ks-toolbar-row">
             <form method="GET" class="ks-search-form">
+                <select name="jenis" onchange="this.form.submit()" class="ks-select">
+                    <option value="">Kategori</option>
+                    @foreach($daftarJenis as $j)
+                        <option value="{{ $j->id_jenis_kelompok }}" {{ request('jenis') == $j->id_jenis_kelompok ? 'selected' : '' }}>
+                            {{ $j->nama_jenis }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <select name="wilayah" onchange="this.form.submit()" class="ks-select">
+                    <option value="">Wilayah</option>
+                    @foreach($daftarWilayah as $w)
+                        @php
+                            $labelWilayah = ($w->kabupaten_kota && $w->kabupaten_kota !== '-')
+                                ? $w->kabupaten_kota
+                                : (($w->provinsi && $w->provinsi !== '-') ? $w->provinsi : $w->kode_wilayah);
+                        @endphp
+                        <option value="{{ $w->id_wilayah }}" {{ request('wilayah') == $w->id_wilayah ? 'selected' : '' }}>
+                            {{ $labelWilayah }}
+                        </option>
+                    @endforeach
+                </select>
+
                 <div class="ks-search">
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari kelompok sasaran atau wilayah...">
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari kelompok...">
                 </div>
+
                 <button type="submit" class="ks-btn-filter">Cari</button>
-                @if (request('q'))
+
+                @if (request()->anyFilled(['q', 'jenis', 'wilayah']))
                     <a href="{{ route('kelompok-sasaran.index') }}" class="ks-btn-reset">Reset</a>
                 @endif
             </form>

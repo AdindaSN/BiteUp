@@ -12,7 +12,14 @@ class KelompokSasaranController extends Controller
     public function index(Request $request)
     {
         $kelompok = KelompokSasaran::with(['jenisKelompok', 'wilayah'])
-            ->when($request->q, function ($query, $q) {
+            ->when($request->filled('jenis'), function ($query) use ($request) {
+                $query->where('id_jenis_kelompok', $request->jenis);
+            })
+            ->when($request->filled('wilayah'), function ($query) use ($request) {
+                $query->where('id_wilayah', $request->wilayah);
+            })
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $q = $request->q;
                 $query->where(function ($sub) use ($q) {
                     $sub->whereHas('jenisKelompok', fn ($j) => $j->where('nama_jenis', 'like', "%{$q}%"))
                         ->orWhereHas('wilayah', function ($w) use ($q) {
@@ -26,7 +33,12 @@ class KelompokSasaranController extends Controller
             ->onEachSide(1)
             ->withQueryString();
 
-        return view('kelompok-sasaran.index', compact('kelompok'));
+        $daftarJenis = JenisKelompok::orderBy('nama_jenis')->get();
+        $daftarWilayah = Wilayah::whereIn('id_wilayah', KelompokSasaran::select('id_wilayah')->distinct())
+            ->orderBy('kabupaten_kota')
+            ->get();
+
+        return view('kelompok-sasaran.index', compact('kelompok', 'daftarJenis', 'daftarWilayah'));
     }
 
     public function create()
