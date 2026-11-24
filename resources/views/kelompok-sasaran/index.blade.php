@@ -100,17 +100,17 @@
             box-shadow: 0 0 0 3px rgba(49, 91, 70, 0.12);
         }
         .ks-btn-filter {
-            padding: 9px 18px;
+            padding: 9px 20px;
             border-radius: 10px;
             font-size: 13.5px;
             font-weight: 600;
             color: #ffffff;
-            background: #1f2937;
+            background: #133123;
             border: none;
             cursor: pointer;
             transition: background 0.15s ease;
         }
-        .ks-btn-filter:hover { background: #111827; }
+        .ks-btn-filter:hover { background: #1d4633; }
         .ks-btn-reset {
             padding: 9px 14px;
             border-radius: 10px;
@@ -245,8 +245,8 @@
     <div class="ks-card">
         <div class="ks-toolbar-row">
             <form method="GET" class="ks-search-form">
-                <select name="jenis" onchange="this.form.submit()" class="ks-select">
-                    <option value="">Kategori</option>
+                <select name="jenis" class="ks-select">
+                    <option value="">Semua Kategori</option>
                     @foreach($daftarJenis as $j)
                         <option value="{{ $j->id_jenis_kelompok }}" {{ request('jenis') == $j->id_jenis_kelompok ? 'selected' : '' }}>
                             {{ $j->nama_jenis }}
@@ -254,8 +254,8 @@
                     @endforeach
                 </select>
 
-                <select name="wilayah" onchange="this.form.submit()" class="ks-select">
-                    <option value="">Wilayah</option>
+                <select name="wilayah" class="ks-select">
+                    <option value="">Semua Wilayah</option>
                     @foreach($daftarWilayah as $w)
                         @php
                             $labelWilayah = ($w->kabupaten_kota && $w->kabupaten_kota !== '-')
@@ -269,10 +269,10 @@
                 </select>
 
                 <div class="ks-search">
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari kelompok...">
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari kelompok sasaran...">
                 </div>
 
-                <button type="submit" class="ks-btn-filter">Cari</button>
+                <button type="submit" class="ks-btn-filter">Filter</button>
 
                 @if (request()->anyFilled(['q', 'jenis', 'wilayah']))
                     <a href="{{ route('kelompok-sasaran.index') }}" class="ks-btn-reset">Reset</a>
