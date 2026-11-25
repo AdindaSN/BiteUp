@@ -20,7 +20,7 @@
 
     <!-- CARD FORM -->
     <div class="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200/80 shadow-sm">
-        
+
         <div class="border-b border-gray-100 pb-5 mb-6">
             <h2 class="text-lg font-bold text-[#29352E]">
                 Alokasi Target Program Baru
@@ -73,29 +73,41 @@
                 <p class="text-[11px] text-gray-400 mt-1">Ketik nama program bantuan pangan yang akan ditetapkan alokasi sasarannya.</p>
             </div>
 
-            <!-- WILAYAH PRIORITAS (DROPDOWN DENGAN PENCARIAN FSVA) -->
+            <!-- WILAYAH PRIORITAS (KETIK DENGAN PENCARIAN FSVA) -->
+            @php
+                $selectedWilayahLabel = '';
+                foreach ($daftarWilayah as $w) {
+                    $lbl = "{$w->kabupaten_kota} — {$w->provinsi} ({$w->kode_wilayah})";
+                    if ((string) old('id_wilayah') === (string) $w->id_wilayah) {
+                        $selectedWilayahLabel = $lbl;
+                    }
+                }
+            @endphp
             <div>
-                <label for="id_wilayah" class="block text-xs font-semibold text-[#29352E] uppercase tracking-wider mb-2">
+                <label for="wilayah_search" class="block text-xs font-semibold text-[#29352E] uppercase tracking-wider mb-2">
                     Wilayah Prioritas <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
-                    <select name="id_wilayah"
-                            id="id_wilayah"
-                            required
-                            class="w-full text-xs font-medium border border-gray-300 rounded-xl px-4 py-3 bg-[#FCFCFA] text-gray-800 focus:outline-none focus:border-[#527653] focus:ring-1 focus:ring-[#527653] transition @error('id_wilayah') border-red-300 bg-red-50/20 @enderror">
-                        <option value="">-- Pilih Wilayah Kabupaten/Kota --</option>
+                    <input type="hidden" name="id_wilayah" id="id_wilayah" value="{{ old('id_wilayah') }}">
+                    <input type="text"
+                           id="wilayah_search"
+                           list="daftar-wilayah"
+                           value="{{ $selectedWilayahLabel }}"
+                           placeholder="Ketik nama kabupaten/kota atau provinsi..."
+                           autocomplete="off"
+                           required
+                           class="w-full text-xs font-medium border border-gray-300 rounded-xl px-4 py-3 bg-[#FCFCFA] text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#527653] focus:ring-1 focus:ring-[#527653] transition @error('id_wilayah') border-red-300 bg-red-50/20 @enderror">
+                    <datalist id="daftar-wilayah">
                         @foreach($daftarWilayah as $wilayah)
-                            <option value="{{ $wilayah->id_wilayah }}"
-                                    {{ old('id_wilayah') == $wilayah->id_wilayah ? 'selected' : '' }}>
-                                {{ $wilayah->kabupaten_kota }} — {{ $wilayah->provinsi }} ({{ $wilayah->kode_wilayah }})
-                            </option>
+                            <option value="{{ $wilayah->kabupaten_kota }} — {{ $wilayah->provinsi }} ({{ $wilayah->kode_wilayah }})"
+                                    data-id="{{ $wilayah->id_wilayah }}"></option>
                         @endforeach
-                    </select>
+                    </datalist>
                 </div>
                 @error('id_wilayah')
                     <p class="text-xs text-red-600 font-medium mt-1.5">{{ $message }}</p>
                 @enderror
-                <p class="text-[11px] text-gray-400 mt-1">Pilih wilayah kabupaten/kota berdasarkan prioritas FSVA.</p>
+                <p id="wilayah_hint" class="text-[11px] text-gray-400 mt-1">Ketik nama kabupaten/kota atau provinsi lalu pilih dari daftar saran yang muncul.</p>
             </div>
 
             <!-- PANEL INFORMASI FSVA WILAYAH -->
@@ -259,7 +271,10 @@
 <!-- JAVASCRIPT: FSVA DATA LOADING & KELOMPOK SASARAN INFO -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const wilayahSelect = document.getElementById('id_wilayah');
+        const wilayahInput = document.getElementById('id_wilayah');
+        const wilayahSearch = document.getElementById('wilayah_search');
+        const wilayahList = document.getElementById('daftar-wilayah');
+        const wilayahHint = document.getElementById('wilayah_hint');
         const kelompokSelect = document.getElementById('id_kelompok');
         const fsvaPanel = document.getElementById('fsva-panel');
         const fsvaWilayahNama = document.getElementById('fsva-wilayah-nama');
@@ -275,12 +290,49 @@
         const infoTahun = document.getElementById('info_tahun');
         const infoJenis = document.getElementById('info_jenis');
 
+        function syncWilayahSelection() {
+            const val = wilayahSearch.value.trim();
+            let matchedId = '';
+
+            for (const opt of wilayahList.options) {
+                if (opt.value === val) {
+                    matchedId = opt.getAttribute('data-id') || '';
+                    break;
+                }
+            }
+
+            const previousId = wilayahInput.value;
+            wilayahInput.value = matchedId;
+
+            if (val !== '' && matchedId === '') {
+                wilayahSearch.setCustomValidity('Pilih wilayah yang sesuai dari daftar saran yang tersedia.');
+                wilayahHint.textContent = 'Wilayah belum terpilih dari daftar saran — silakan klik salah satu opsi yang muncul.';
+                wilayahHint.classList.remove('text-gray-400');
+                wilayahHint.classList.add('text-amber-600');
+            } else {
+                wilayahSearch.setCustomValidity('');
+                wilayahHint.textContent = 'Ketik nama kabupaten/kota atau provinsi lalu pilih dari daftar saran yang muncul.';
+                wilayahHint.classList.remove('text-amber-600');
+                wilayahHint.classList.add('text-gray-400');
+            }
+
+            if (previousId !== matchedId) {
+                wilayahInput.dispatchEvent(new Event('change'));
+            }
+        }
+
+        if (wilayahSearch) {
+            wilayahSearch.addEventListener('input', syncWilayahSelection);
+            wilayahSearch.addEventListener('change', syncWilayahSelection);
+        }
+
         // Load FSVA data when wilayah changes
-        if (wilayahSelect) {
-            wilayahSelect.addEventListener('change', function () {
+        if (wilayahInput) {
+            wilayahInput.addEventListener('change', function () {
                 const idWilayah = this.value;
                 if (!idWilayah) {
                     fsvaPanel.classList.add('hidden');
+                    filterKelompokByWilayah('');
                     return;
                 }
 
@@ -368,7 +420,6 @@
         // Filter kelompok options by selected wilayah
         function filterKelompokByWilayah(idWilayah) {
             const options = kelompokSelect.querySelectorAll('option');
-            let hasVisible = false;
 
             options.forEach(function (opt) {
                 if (!opt.value) return; // skip placeholder
@@ -384,7 +435,6 @@
                 } else {
                     opt.classList.remove('hidden');
                     opt.disabled = false;
-                    hasVisible = true;
                 }
             });
         }
@@ -411,8 +461,8 @@
         }
 
         // Trigger initial load if wilayah was pre-selected (e.g. from old input)
-        if (wilayahSelect && wilayahSelect.value) {
-            wilayahSelect.dispatchEvent(new Event('change'));
+        if (wilayahInput && wilayahInput.value) {
+            wilayahInput.dispatchEvent(new Event('change'));
         }
     });
 </script>

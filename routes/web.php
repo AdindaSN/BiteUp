@@ -2,6 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataIndikatorController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\ProgramSasaranController;
+use App\Http\Controllers\KelompokSasaranController;
+use App\Models\User;
+use App\Http\Controllers\PrioritasWilayahController;
+use App\Http\Controllers\HasilIdentifikasiController;
+use App\Http\Controllers\WilayahController;
+use App\Http\Controllers\DataWilayahFsvaController;
 
 // Halaman utama (Landing Page Publik BiteUp)
 Route::get('/', function () {
@@ -335,17 +346,20 @@ Route::middleware('auth')->group(function () {
             ->name('hasil-identifikasi.index');
     });
 
-    // Pengelolaan Data Program (PBI-017 & PBI-018) - Kecuali show karena didefinisikan manual
-    Route::resource('program', ProgramController::class)->except(['show']);
+    // Daftar & Detail Program Bantuan (dapat dilihat seluruh role terautentikasi)
+    Route::get('/program', [ProgramController::class, 'index'])->name('program.index');
 
-    // PBI-019: Route Detail / Show Program Bantuan
-    Route::get('/program/{id}', [ProgramController::class, 'show'])->name('program.show');
-
-    // PBI-018: Route khusus eksplisit untuk Edit & Update Program Bantuan (jika dibutuhkan terpisah)
+    // PBI-017 & PBI-018: Tambah, Edit, & Hapus Program Bantuan (khusus Petugas Program & Admin)
     Route::middleware('role:3,4')->group(function () {
+        Route::get('/program/create', [ProgramController::class, 'create'])->name('program.create');
+        Route::post('/program', [ProgramController::class, 'store'])->name('program.store');
         Route::get('/program/{id}/edit', [ProgramController::class, 'edit'])->name('program.edit');
         Route::put('/program/{id}', [ProgramController::class, 'update'])->name('program.update');
+        Route::delete('/program/{id}', [ProgramController::class, 'destroy'])->name('program.destroy');
     });
+
+    // PBI-019: Route Detail / Show Program Bantuan (diletakkan setelah /program/create)
+    Route::get('/program/{id}', [ProgramController::class, 'show'])->name('program.show');
 
     // Pengelolaan Target Program (PBI-014)
     Route::get('/target-program', [ProgramSasaranController::class, 'index'])
@@ -389,3 +403,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/grafik-tren-indikator', [DataIndikatorController::class, 'grafikTren'])->name('indikator.grafik-tren');
 
 });
+
+// Route khusus Pengelola Sistem Bapanas (Role ID 4)
+Route::middleware(['auth', 'role:4'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/pengguna', [UserManagementController::class, 'index'])
+            ->name('pengguna.index');
+
+        Route::post('/pengguna/{id}/verify', [UserManagementController::class, 'verify'])
+            ->name('pengguna.verify');
+
+        Route::post('/pengguna/{id}/reject', [UserManagementController::class, 'reject'])
+            ->name('pengguna.reject');
+    });

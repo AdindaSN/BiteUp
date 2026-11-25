@@ -152,7 +152,7 @@
 
     <!-- SIDEBAR -->
     <aside id="sidebar"
-           class="fixed inset-y-0 left-0 z-50 w-72 bg-[#133123] text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 lg:static border-r border-[#274837] shadow-2xl lg:shadow-none overflow-x-hidden">
+           class="fixed inset-y-0 left-0 z-50 w-72 bg-[#133123] text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0 border-r border-[#274837] shadow-2xl lg:shadow-none overflow-x-hidden">
 
         <!-- SIDEBAR TOP -->
         <div class="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
@@ -229,7 +229,7 @@
                     @endphp
 
                     <!-- MENU WILAYAH & FSVA -->
-                    @if(in_array($userRole, [1, 4], true))
+                    @if(in_array($userRole, [1, 2, 4], true))
                         <div class="space-y-1 pt-2 border-t border-white/10 nav-group-animate" style="animation-delay: 0.1s;">
                             <p class="sidebar-section-title px-3 text-[10px] font-semibold text-emerald-200/60 uppercase tracking-wider mb-2 transition-opacity duration-200">
                                 Wilayah & Ketahanan Pangan
@@ -276,6 +276,28 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                                     </svg>
                                     <span class="sidebar-label transition-opacity duration-200">Hasil Identifikasi</span>
+                                </a>
+                            @endif
+                            @if(Route::has('indikator.ringkasan'))
+                                <a href="{{ route('indikator.ringkasan') }}"
+                                   title="Ringkasan Indikator"
+                                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('indikator.ringkasan') ? 'is-active bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                                    </svg>
+                                    <span class="sidebar-label transition-opacity duration-200">Ringkasan Indikator</span>
+                                </a>
+                            @endif
+
+                            @if(Route::has('indikator.grafik-tren'))
+                                <a href="{{ route('indikator.grafik-tren') }}"
+                                   title="Grafik Tren Indikator"
+                                   class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('indikator.grafik-tren') ? 'is-active bg-[#527653] text-white shadow-sm' : 'text-emerald-100/90 hover:bg-white/10 hover:text-white' }}">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                                    </svg>
+                                    <span class="sidebar-label transition-opacity duration-200">Grafik Tren Indikator</span>
                                 </a>
                             @endif
                         </div>

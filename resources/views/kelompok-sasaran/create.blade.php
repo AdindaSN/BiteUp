@@ -72,16 +72,34 @@
                 <p class="text-[11px] text-gray-400 mt-1">Pilih kategori kelompok sasaran (misalnya Balita, Ibu Hamil, Rumah Tangga Miskin).</p>
             </div>
 
-            <!-- WILAYAH -->
+            <!-- WILAYAH (KETIK / CARI DARI DAFTAR) -->
+            @php
+                $selectedWilayahLabel = '';
+                foreach ($daftarWilayah as $w) {
+                    $hasKab = $w->kabupaten_kota && $w->kabupaten_kota !== '-';
+                    $lbl = $hasKab
+                        ? "{$w->provinsi} — {$w->kabupaten_kota} ({$w->kode_wilayah})"
+                        : "{$w->provinsi} ({$w->kode_wilayah})";
+                    if ((string) old('id_wilayah') === (string) $w->id_wilayah) {
+                        $selectedWilayahLabel = $lbl;
+                    }
+                }
+            @endphp
             <div>
-                <label for="id_wilayah" class="block text-xs font-semibold text-[#29352E] uppercase tracking-wider mb-2">
+                <label for="wilayah_search" class="block text-xs font-semibold text-[#29352E] uppercase tracking-wider mb-2">
                     Wilayah <span class="text-red-500">*</span>
                 </label>
-                <select name="id_wilayah"
-                        id="id_wilayah"
-                        required
-                        class="w-full text-xs font-medium border border-gray-300 rounded-xl px-4 py-3 bg-[#FCFCFA] text-gray-800 focus:outline-none focus:border-[#527653] focus:ring-1 focus:ring-[#527653] transition @error('id_wilayah') border-red-300 bg-red-50/20 @enderror">
-                    <option value="">-- Pilih Wilayah --</option>
+                <input type="hidden" name="id_wilayah" id="id_wilayah" value="{{ old('id_wilayah') }}">
+                <input type="text"
+                       id="wilayah_search"
+                       list="daftar_wilayah_list"
+                       value="{{ $selectedWilayahLabel }}"
+                       placeholder="Ketik nama provinsi atau kabupaten/kota..."
+                       autocomplete="off"
+                       required
+                       class="w-full text-xs font-medium border border-gray-300 rounded-xl px-4 py-3 bg-[#FCFCFA] text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#527653] focus:ring-1 focus:ring-[#527653] transition @error('id_wilayah') border-red-300 bg-red-50/20 @enderror">
+
+                <datalist id="daftar_wilayah_list">
                     @foreach($daftarWilayah as $wilayah)
                         @php
                             $hasKab = $wilayah->kabupaten_kota && $wilayah->kabupaten_kota !== '-';
@@ -89,16 +107,14 @@
                                 ? "{$wilayah->provinsi} — {$wilayah->kabupaten_kota} ({$wilayah->kode_wilayah})"
                                 : "{$wilayah->provinsi} ({$wilayah->kode_wilayah})";
                         @endphp
-                        <option value="{{ $wilayah->id_wilayah }}"
-                                {{ old('id_wilayah') == $wilayah->id_wilayah ? 'selected' : '' }}>
-                            {{ $labelWilayah }}
-                        </option>
+                        <option value="{{ $labelWilayah }}" data-id="{{ $wilayah->id_wilayah }}"></option>
                     @endforeach
-                </select>
+                </datalist>
+
                 @error('id_wilayah')
                     <p class="text-xs text-red-600 font-medium mt-1.5">{{ $message }}</p>
                 @enderror
-                <p class="text-[11px] text-gray-400 mt-1">Pilih wilayah administrasi tempat kelompok sasaran berada.</p>
+                <p id="wilayah_hint" class="text-[11px] text-gray-400 mt-1">Ketik nama provinsi atau kabupaten/kota lalu pilih dari daftar saran yang muncul.</p>
             </div>
 
             <!-- GRID TAHUN & JUMLAH -->
@@ -166,4 +182,42 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('wilayah_search');
+    const hiddenInput = document.getElementById('id_wilayah');
+    const dataList = document.getElementById('daftar_wilayah_list');
+    const hintText = document.getElementById('wilayah_hint');
+
+    function syncWilayahId() {
+        const val = searchInput.value.trim();
+        let matchedId = '';
+
+        for (const option of dataList.options) {
+            if (option.value === val) {
+                matchedId = option.getAttribute('data-id') || '';
+                break;
+            }
+        }
+
+        hiddenInput.value = matchedId;
+
+        if (val !== '' && matchedId === '') {
+            searchInput.setCustomValidity('Pilih wilayah yang sesuai dari daftar saran yang tersedia.');
+            hintText.textContent = 'Wilayah belum terpilih dari daftar saran — silakan klik salah satu opsi yang muncul.';
+            hintText.classList.remove('text-gray-400');
+            hintText.classList.add('text-amber-600');
+        } else {
+            searchInput.setCustomValidity('');
+            hintText.textContent = 'Ketik nama provinsi atau kabupaten/kota lalu pilih dari daftar saran yang muncul.';
+            hintText.classList.remove('text-amber-600');
+            hintText.classList.add('text-gray-400');
+        }
+    }
+
+    searchInput.addEventListener('input', syncWilayahId);
+    searchInput.addEventListener('change', syncWilayahId);
+});
+</script>
 @endsection

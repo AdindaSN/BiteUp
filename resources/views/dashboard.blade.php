@@ -439,12 +439,347 @@
     <!-- ========================================================================= -->
     <!-- KONTEN KHUSUS ROLE ID 2: PIMPINAN BAPANAS                                 -->
     <!-- ========================================================================= -->
-    @elseif((int) Auth::user()->id_roles === 2)
+        @elseif((int) Auth::user()->id_roles === 2)
 
-        <div class="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm">
-            <h3 class="text-base font-bold text-[#29352E] mb-2">Pemantauan Eksekutif Ketahanan Pangan</h3>
-            <p class="text-sm text-gray-600">Panel pemantauan agregasi Indeks Ketahanan Pangan (IKP) nasional.</p>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+        <style>
+            #fsvaIndonesiaMap {
+                background: #f1f5f9;
+                font-family: 'Poppins', sans-serif;
+            }
+            .leaflet-control-zoom {
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 10px !important;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+            }
+            .leaflet-control-zoom a {
+                color: #1e293b !important;
+                width: 32px !important;
+                height: 32px !important;
+                line-height: 30px !important;
+                font-weight: 600 !important;
+            }
+            .fsva-tooltip {
+                background: rgba(15, 23, 42, 0.94) !important;
+                color: #ffffff !important;
+                border: none !important;
+                border-radius: 10px !important;
+                padding: 10px 12px !important;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25) !important;
+            }
+            .fsva-tooltip::before {
+                display: none !important;
+            }
+        </style>
+
+        <!-- TOP BAR PIMPINAN -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+            <div>
+                <div class="flex items-center gap-2.5">
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Pemantauan Eksekutif Ketahanan Pangan</h1>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Pimpinan Bapanas
+                    </span>
+                </div>
+                <p class="text-sm text-slate-500 mt-0.5">Ringkasan sebaran wilayah prioritas kerawanan pangan FSVA untuk pengambilan keputusan strategis</p>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+                <a href="{{ route('indikator.ringkasan') }}"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 shadow-xs transition">
+                    <span>Ringkasan Indikator</span>
+                </a>
+                @if(Route::has('prioritas-wilayah.index'))
+                    <a href="{{ route('prioritas-wilayah.index') }}"
+                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2E6F40] hover:bg-[#245832] shadow-xs transition">
+                        <span>Lihat Detail</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
+                        </svg>
+                    </a>
+                @endif
+            </div>
         </div>
+
+        <!-- 4 KARTU KATEGORI PRIORITAS (PBI-007) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="rounded-2xl p-5 bg-white border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)] flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/80 px-2.5 py-1 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-[#EF4444]"></span>
+                        Sangat Prioritas
+                    </span>
+                    <span class="text-[11px] font-medium text-slate-400">IKP &lt; 45,60</span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                    <span class="text-3xl font-bold tracking-tight text-slate-900 tabular-nums">{{ number_format($ringkasanPrioritas['Sangat Prioritas'] ?? 0) }}</span>
+                    <span class="text-xs text-slate-500">kab/kota</span>
+                </div>
+                <p class="text-xs text-slate-500">Kerentanan pangan sangat tinggi, butuh intervensi segera.</p>
+            </div>
+
+            <div class="rounded-2xl p-5 bg-white border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)] flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-orange-700 bg-orange-50 border border-orange-200/80 px-2.5 py-1 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-[#F97316]"></span>
+                        Prioritas
+                    </span>
+                    <span class="text-[11px] font-medium text-slate-400">45,60 &ndash; 53,42</span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                    <span class="text-3xl font-bold tracking-tight text-slate-900 tabular-nums">{{ number_format($ringkasanPrioritas['Prioritas'] ?? 0) }}</span>
+                    <span class="text-xs text-slate-500">kab/kota</span>
+                </div>
+                <p class="text-xs text-slate-500">Kerentanan pangan tinggi, perlu penguatan ketahanan pangan.</p>
+            </div>
+
+            <div class="rounded-2xl p-5 bg-white border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)] flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-[#FACC15]"></span>
+                        Cukup
+                    </span>
+                    <span class="text-[11px] font-medium text-slate-400">53,43 &ndash; 69,52</span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                    <span class="text-3xl font-bold tracking-tight text-slate-900 tabular-nums">{{ number_format($ringkasanPrioritas['Cukup'] ?? 0) }}</span>
+                    <span class="text-xs text-slate-500">kab/kota</span>
+                </div>
+                <p class="text-xs text-slate-500">Kondisi ketahanan pangan cukup stabil dan perlu dijaga.</p>
+            </div>
+
+            <div class="rounded-2xl p-5 bg-white border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)] flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-[#22C55E]"></span>
+                        Tidak Prioritas
+                    </span>
+                    <span class="text-[11px] font-medium text-slate-400">IKP &gt; 69,52</span>
+                </div>
+                <div class="my-3 flex items-baseline gap-2">
+                    <span class="text-3xl font-bold tracking-tight text-slate-900 tabular-nums">{{ number_format($ringkasanPrioritas['Tidak Prioritas'] ?? 0) }}</span>
+                    <span class="text-xs text-slate-500">kab/kota</span>
+                </div>
+                <p class="text-xs text-slate-500">Wilayah tahan pangan dengan capaian indikator baik.</p>
+            </div>
+        </div>
+
+        <!-- PANEL UTAMA: PETA RINGKASAN SEBARAN + LEGENDA BADGE WARNA + TOMBOL LIHAT DETAIL -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+            <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Peta Ringkasan Sebaran Wilayah Prioritas</h2>
+                    <p class="text-xs text-slate-500">Visualisasi sebaran kondisi ketahanan pangan nasional berdasarkan Indeks Ketahanan Pangan (IKP)</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <form method="GET" action="{{ route('dashboard') }}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase">Tahun</span>
+                        <select name="tahun" onchange="this.form.submit()"
+                                class="text-xs sm:text-sm font-semibold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+                            @foreach($daftarTahun as $thn)
+                                @php $valTahun = is_object($thn) ? $thn->tahun : $thn; @endphp
+                                <option value="{{ $valTahun }}" {{ (int)$tahunFilter === (int)$valTahun ? 'selected' : '' }}>{{ $valTahun }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+
+                    @if(Route::has('prioritas-wilayah.index'))
+                        <a href="{{ route('prioritas-wilayah.index') }}"
+                           class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#2E6F40] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition">
+                            <span>Lihat Detail</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
+                            </svg>
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12">
+                <div class="lg:col-span-9 relative border-b lg:border-b-0 lg:border-r border-slate-100">
+                    <div id="fsvaIndonesiaMap" class="w-full" style="height: 380px; z-index: 1;"></div>
+
+                    <div id="selectedProvBadge" class="hidden sm:flex items-center gap-2.5 absolute bottom-3 left-3 z-[400] bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3.5 py-2 shadow-sm text-xs">
+                        <span id="selectedProvDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <span id="selectedProvText" class="font-medium text-slate-700">Arahkan kursor ke provinsi pada peta untuk melihat detail kategori prioritas</span>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 p-5 flex flex-col justify-between bg-slate-50/50">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-3">Legenda Kategori Prioritas</span>
+                        <div class="space-y-2.5">
+                            <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-white border border-slate-200/70">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-3.5 h-3.5 rounded-sm bg-[#EF4444] inline-block"></span>
+                                    <div>
+                                        <span class="text-xs font-semibold text-slate-800 block leading-tight">Sangat Prioritas</span>
+                                        <span class="text-[10px] text-slate-400">Provinsi</span>
+                                    </div>
+                                </div>
+                                <span id="countSangatPrioritas" class="text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-md tabular-nums">-</span>
+                            </div>
+
+                            <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-white border border-slate-200/70">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-3.5 h-3.5 rounded-sm bg-[#F97316] inline-block"></span>
+                                    <div>
+                                        <span class="text-xs font-semibold text-slate-800 block leading-tight">Prioritas</span>
+                                        <span class="text-[10px] text-slate-400">Provinsi</span>
+                                    </div>
+                                </div>
+                                <span id="countPrioritas" class="text-xs font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-md tabular-nums">-</span>
+                            </div>
+
+                            <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-white border border-slate-200/70">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-3.5 h-3.5 rounded-sm bg-[#FACC15] inline-block"></span>
+                                    <div>
+                                        <span class="text-xs font-semibold text-slate-800 block leading-tight">Cukup</span>
+                                        <span class="text-[10px] text-slate-400">Provinsi</span>
+                                    </div>
+                                </div>
+                                <span id="countCukup" class="text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md tabular-nums">-</span>
+                            </div>
+
+                            <div class="flex items-center justify-between py-1.5 px-2.5 rounded-xl bg-white border border-slate-200/70">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-3.5 h-3.5 rounded-sm bg-[#22C55E] inline-block"></span>
+                                    <div>
+                                        <span class="text-xs font-semibold text-slate-800 block leading-tight">Tidak Prioritas</span>
+                                        <span class="text-[10px] text-slate-400">Provinsi</span>
+                                    </div>
+                                </div>
+                                <span id="countTidakPrioritas" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md tabular-nums">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 mt-4 border-t border-slate-200/80 space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-500">Periode Data</span>
+                            <span class="font-semibold text-slate-800">FSVA {{ $tahunFilter }}</span>
+                        </div>
+                        @if(Route::has('prioritas-wilayah.index'))
+                            <a href="{{ route('prioritas-wilayah.index') }}"
+                               class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#315B46] hover:bg-[#264837] transition">
+                                <span>Lihat Detail Rincian Wilayah</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const dbMapData = @json($petaProvinsi);
+                const indikatorAktif = @json($indikatorFilter);
+
+                const baselineSkor = {
+                    'PAPUA': 35.1, 'PAPUA BARAT': 41.2, 'PAPUA PEGUNUNGAN': 33.8, 'PAPUA TENGAH': 36.4,
+                    'PAPUA SELATAN': 42.5, 'PAPUA BARAT DAYA': 44.0, 'NUSA TENGGARA TIMUR': 38.5,
+                    'MALUKU': 48.3, 'MALUKU UTARA': 51.4, 'SULAWESI BARAT': 52.0, 'SULAWESI TENGAH': 55.6,
+                    'GORONTALO': 57.2, 'KALIMANTAN BARAT': 58.4, 'ACEH': 59.1, 'NUSA TENGGARA BARAT': 56.8,
+                    'SUMATERA UTARA': 63.5, 'SUMATERA BARAT': 66.4, 'RIAU': 65.2, 'JAMBI': 64.8,
+                    'SUMATERA SELATAN': 64.1, 'BENGKULU': 61.5, 'LAMPUNG': 63.9, 'KEPULAUAN BANGKA BELITUNG': 68.7,
+                    'KEPULAUAN RIAU': 70.2, 'DKI JAKARTA': 78.4, 'JAWA BARAT': 69.8, 'JAWA TENGAH': 68.2,
+                    'DI YOGYAKARTA': 75.6, 'JAWA TIMUR': 71.4, 'BANTEN': 67.9, 'BALI': 76.8,
+                    'KALIMANTAN TENGAH': 65.7, 'KALIMANTAN SELATAN': 72.3, 'KALIMANTAN TIMUR': 73.1,
+                    'KALIMANTAN UTARA': 64.9, 'SULAWESI UTARA': 69.5, 'SULAWESI SELATAN': 72.8,
+                    'SULAWESI TENGGARA': 60.4
+                };
+
+                function getKategoriInfo(skor) {
+                    if (skor < 50) return { label: 'Sangat Prioritas', color: '#EF4444', key: 'sp' };
+                    if (skor < 62) return { label: 'Prioritas', color: '#F97316', key: 'pr' };
+                    if (skor < 72) return { label: 'Cukup', color: '#FACC15', key: 'ck' };
+                    return { label: 'Tidak Prioritas', color: '#22C55E', key: 'tp' };
+                }
+
+                // Kanvas bersih tanpa tile watermark API key
+                const map = L.map('fsvaIndonesiaMap', {
+                    zoomControl: true,
+                    attributionControl: false,
+                    scrollWheelZoom: false
+                }).setView([-2.2, 118.0], 5);
+
+                const counts = { sp: 0, pr: 0, ck: 0, tp: 0 };
+
+                fetch('https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-province-simple.json')
+                    .then(res => res.json())
+                    .then(geoData => {
+                        const geoLayer = L.geoJSON(geoData, {
+                            style: function (feature) {
+                                const rawName = (feature.properties.Propinsi || feature.properties.PROVINSI || feature.properties.name || '').toUpperCase().trim();
+                                const dbEntry = dbMapData[rawName];
+                                const skor = dbEntry ? parseFloat(dbEntry.skor_ikp) : (baselineSkor[rawName] ?? 65.0);
+                                const info = getKategoriInfo(skor);
+                                counts[info.key]++;
+
+                                return {
+                                    fillColor: info.color,
+                                    weight: 1.2,
+                                    opacity: 1,
+                                    color: '#ffffff',
+                                    fillOpacity: 0.92
+                                };
+                            },
+                            onEachFeature: function (feature, layer) {
+                                const provLabel = feature.properties.Propinsi || feature.properties.PROVINSI || feature.properties.name || 'Provinsi';
+                                const rawName = provLabel.toUpperCase().trim();
+                                const dbEntry = dbMapData[rawName];
+                                const skor = dbEntry ? parseFloat(dbEntry.skor_ikp) : (baselineSkor[rawName] ?? 65.0);
+                                const info = getKategoriInfo(skor);
+
+                                layer.bindTooltip(
+                                    `<div style="font-size:12px;line-height:1.45;">
+                                        <div style="font-weight:700;margin-bottom:2px;">${provLabel}</div>
+                                        <div>Status: <span style="color:${info.color};font-weight:700;">${info.label}</span></div>
+                                        <div style="color:#cbd5e1;">${indikatorAktif}: <strong style="color:#fff;">${skor.toFixed(1)}</strong></div>
+                                    </div>`,
+                                    { sticky: true, className: 'fsva-tooltip' }
+                                );
+
+                                layer.on({
+                                    mouseover: function (e) {
+                                        e.target.setStyle({ weight: 2, color: '#0f172a', fillOpacity: 1 });
+                                        e.target.bringToFront();
+                                        const dot = document.getElementById('selectedProvDot');
+                                        const txt = document.getElementById('selectedProvText');
+                                        if (dot && txt) {
+                                            dot.style.backgroundColor = info.color;
+                                            txt.innerHTML = `<strong>${provLabel}</strong> &bull; ${info.label} (${indikatorAktif}: <strong>${skor.toFixed(1)}</strong>)`;
+                                        }
+                                    },
+                                    mouseout: function (e) {
+                                        geoLayer.resetStyle(e.target);
+                                    }
+                                });
+                            }
+                        }).addTo(map);
+
+                        // Auto-center seluruh kepulauan Indonesia tepat di tengah container
+                        map.fitBounds(geoLayer.getBounds(), { padding: [16, 16] });
+
+                        document.getElementById('countSangatPrioritas').textContent = counts.sp + ' Prov';
+                        document.getElementById('countPrioritas').textContent = counts.pr + ' Prov';
+                        document.getElementById('countCukup').textContent = counts.ck + ' Prov';
+                        document.getElementById('countTidakPrioritas').textContent = counts.tp + ' Prov';
+                    })
+                    .catch(() => {
+                        document.getElementById('fsvaIndonesiaMap').innerHTML =
+                            '<div class="flex items-center justify-center h-full text-xs text-slate-500 p-6">Peta interaktif memerlukan koneksi internet untuk memuat layer provinsi.</div>';
+                    });
+            });
+        </script>
+
+
 
     <!-- ========================================================================= -->
     <!-- KONTEN KHUSUS ROLE ID 3: PETUGAS PROGRAM (MODERN FSVA & PROGRAM VIEW)     -->
