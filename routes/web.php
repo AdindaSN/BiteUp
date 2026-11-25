@@ -2,17 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataIndikatorController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserManagementController;
-use App\Http\Controllers\ProgramController;
-use App\Http\Controllers\ProgramSasaranController;
-use App\Http\Controllers\KelompokSasaranController;
-use App\Models\User;
-use App\Http\Controllers\PrioritasWilayahController;
-use App\Http\Controllers\HasilIdentifikasiController;
-use App\Http\Controllers\WilayahController;
-use App\Http\Controllers\DataWilayahFsvaController;
 
 // Halaman utama (Landing Page Publik BiteUp)
 Route::get('/', function () {
@@ -383,18 +372,16 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// Route khusus Pengelola Sistem Bapanas (Role ID 4)
-Route::middleware(['auth', 'role:4'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
+// Autentikasi bawaan Laravel/BiteUp (jika ada)
+// Auth::routes();
 
-        Route::get('/pengguna', [UserManagementController::class, 'index'])
-            ->name('pengguna.index');
+// Group rute yang memerlukan autentikasi
+Route::middleware(['auth'])->group(function () {
+    
+    // Rute PBI-005: Ringkasan Indikator Utama
+    Route::get('/ringkasan-indikator', [DataIndikatorController::class, 'ringkasan'])->name('indikator.ringkasan');
 
-        Route::post('/pengguna/{id}/verify', [UserManagementController::class, 'verify'])
-            ->name('pengguna.verify');
+    // Rute PBI-006: Visualisasi Statistik dan Grafik Tren
+    Route::get('/grafik-tren-indikator', [DataIndikatorController::class, 'grafikTren'])->name('indikator.grafik-tren');
 
-        Route::post('/pengguna/{id}/reject', [UserManagementController::class, 'reject'])
-            ->name('pengguna.reject');
-    });
+});
