@@ -230,9 +230,9 @@ Route::middleware('auth')->group(function () {
             ->values()
             ->take(8)
             ->map(function ($row) use ($klasifikasiIkp) {
-                [$level, $namaKat] = $klasifikasiIkp($row->skor_ikp);
-                $row->level_prioritas = $level;
-                $row->label_prioritas = $row->kategori_prioritas ?? $namaKat;
+                $hasilKlasifikasi = $klasifikasiIkp($row->skor_ikp);
+                $row->level_prioritas = $hasilKlasifikasi[0];
+                $row->label_prioritas = $row->kategori_prioritas ?? $hasilKlasifikasi[1];
                 return $row;
             });
 
@@ -295,8 +295,8 @@ Route::middleware('auth')->group(function () {
             ->name('kelompok-sasaran.destroy');
     });
 
-    // Khusus Petugas Data Wilayah (Role ID 1) & Admin (Role ID 4)
-    Route::middleware('role:1,4')->group(function () {
+    // Petugas Data Wilayah (Role 1), Pimpinan (Role 2), & Admin (Role 4)
+    Route::middleware('role:1,2,4')->group(function () {
         // PBI-001 & PBI-002: Manajemen Data Wilayah
         Route::get('/wilayah', [WilayahController::class, 'index'])
             ->name('wilayah.index');
@@ -314,6 +314,10 @@ Route::middleware('auth')->group(function () {
         // PBI-005 & PBI-006: Data Wilayah & FSVA
         Route::get('/data-wilayah', [DataWilayahFsvaController::class, 'index'])
             ->name('data-wilayah.index');
+
+        // PBI-005: Route Ringkasan Indikator Utama
+        Route::get('/ringkasan-indikator', [DataIndikatorController::class, 'ringkasan'])
+            ->name('indikator.ringkasan');
 
         // PBI-008: Halaman Data Indikator per Wilayah
         Route::get('/indikator-wilayah', [DataIndikatorController::class, 'index'])

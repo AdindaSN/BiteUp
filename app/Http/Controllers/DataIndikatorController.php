@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\DataIndikator;
-use App\Models\Indikator;
 use App\Models\Wilayah;
 
 class DataIndikatorController extends Controller
@@ -70,4 +69,6 @@ class DataIndikatorController extends Controller
             'idWilayah'
         ));
     }
+    
+    // ... (metode bawaan controller lainnya biarkan tetap ada)
 }
