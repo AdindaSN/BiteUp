@@ -1,97 +1,4 @@
-<?php
-
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DataIndikatorController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserManagementController;
-use App\Http\Controllers\ProgramController;
-use App\Http\Controllers\ProgramSasaranController;
-use App\Http\Controllers\KelompokSasaranController;
-use App\Models\User;
-use App\Http\Controllers\PrioritasWilayahController;
-use App\Http\Controllers\HasilIdentifikasiController;
-use App\Http\Controllers\WilayahController;
-use App\Http\Controllers\DataWilayahFsvaController;
-
-// Halaman utama (Landing Page Publik BiteUp)
-Route::get('/', function () {
-    $tahunTerbaru = \App\Models\HasilIkp::max('tahun') ?? date('Y');
-    $totalWilayah = \App\Models\Wilayah::count();
-    $totalProvinsi = \App\Models\Wilayah::whereNotNull('provinsi')
-        ->where('provinsi', '!=', '')
-        ->distinct('provinsi')
-        ->count('provinsi');
-
-    $hasilIkp = \App\Models\HasilIkp::with('wilayah')->where('tahun', $tahunTerbaru)->get();
-    $rataRataIkp = $hasilIkp->avg('skor_ikp') ?? 0;
-    $wilayahRentan = $hasilIkp->filter(fn($r) => (float) $r->skor_ikp <= 53.42)->count();
-
-    $programAktif = \App\Models\Program::whereIn('status', ['Aktif', 'Berjalan'])->count();
-    if ($programAktif === 0) {
-        $programAktif = \App\Models\Program::count();
-    }
-    $totalPenerima = \App\Models\ProgramSasaran::sum('target_jumlah') ?? 0;
-
-    // Agregasi rata-rata skor IKP per provinsi untuk peta publik FSVA
-    $petaProvinsi = $hasilIkp
-        ->filter(fn($r) => $r->wilayah && !empty($r->wilayah->provinsi))
-        ->groupBy(fn($r) => strtoupper(trim($r->wilayah->provinsi)))
-        ->map(function ($rows, $prov) {
-            $avgSkor = round($rows->avg('skor_ikp'), 2);
-            $prio = $avgSkor < 45.60 ? 1
-                : ($avgSkor <= 53.42 ? 2
-                : ($avgSkor <= 61.47 ? 3
-                : ($avgSkor <= 69.52 ? 4
-                : ($avgSkor <= 77.35 ? 5 : 6))));
-            return [
-                'provinsi' => $prov,
-                'skor_ikp' => $avgSkor,
-                'prioritas' => $prio,
-                'jumlah_kab' => $rows->count(),
-            ];
-        })
-        ->values();
-
-    return view('welcome', compact(
-        'tahunTerbaru',
-        'totalWilayah',
-        'totalProvinsi',
-        'rataRataIkp',
-        'wilayahRentan',
-        'programAktif',
-        'totalPenerima',
-        'petaProvinsi'
-    ));
-})->name('home');
-
-// Route untuk pengguna yang belum login
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])
-        ->name('login');
-
-    Route::post('/login', [AuthController::class, 'login'])
-        ->name('login.post');
-
-    Route::get('/register', [AuthController::class, 'showRegister'])
-        ->name('register');
-
-    Route::post('/register', [AuthController::class, 'register'])
-        ->name('register.post');
-});
-
-// Route untuk pengguna yang sudah login
-Route::middleware('auth')->group(function () {
-
-    Route::post('/logout', [AuthController::class, 'logout'])
-        ->name('logout');
-
-    // Pengaturan Profil Mandiri Pengguna (Semua Role)
-    Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
-
-    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
+Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
         $roleId = (int) $user->id_roles;
         $isAdmin = $roleId === 4;
@@ -140,6 +47,16 @@ Route::middleware('auth')->group(function () {
         $hasilIkpRows = \App\Models\HasilIkp::with('wilayah')
             ->where('tahun', $tahunFilter)
             ->get();
+
+        // ==========================================
+        // LOGIKA RINGKASAN SEBARAN WILAYAH (PBI-007)
+        // ==========================================
+        $ringkasanPrioritas = [
+            'Sangat Prioritas' => $hasilIkpRows->filter(fn($r) => (float)$r->skor_ikp < 45.60)->count(),
+            'Prioritas'        => $hasilIkpRows->filter(fn($r) => (float)$r->skor_ikp >= 45.60 && (float)$r->skor_ikp <= 53.42)->count(),
+            'Cukup'            => $hasilIkpRows->filter(fn($r) => (float)$r->skor_ikp > 53.42 && (float)$r->skor_ikp <= 69.52)->count(),
+            'Tidak Prioritas'  => $hasilIkpRows->filter(fn($r) => (float)$r->skor_ikp > 69.52)->count(),
+        ];
 
         $petaProvinsi = [];
         foreach ($hasilIkpRows->groupBy(fn($r) => strtoupper(trim($r->wilayah->provinsi ?? ''))) as $provName => $items) {
@@ -252,6 +169,7 @@ Route::middleware('auth')->group(function () {
             'totalKelompokSasaran',
             'totalPendudukRentan',
             'wilayahTerjangkau',
+            'ringkasanPrioritas',
             'petaProvinsi',
             'targetProgramTerbaru',
             'totalWilayah',
@@ -268,122 +186,3 @@ Route::middleware('auth')->group(function () {
             'hasilPrioritasTerbaru'
         ));
     })->name('dashboard');
-
-    // Pengelolaan Data Kelompok Sasaran (PBI-011)
-    Route::get('/kelompok-sasaran', [KelompokSasaranController::class, 'index'])
-        ->name('kelompok-sasaran.index');
-
-    // Menambahkan Data Kelompok Sasaran (PBI-012)
-    Route::middleware('role:3,4')->group(function () {
-        Route::get('/kelompok-sasaran/create', [KelompokSasaranController::class, 'create'])
-            ->name('kelompok-sasaran.create');
-        Route::post('/kelompok-sasaran', [KelompokSasaranController::class, 'store'])
-            ->name('kelompok-sasaran.store');
-    });
-
-    // Mengubah Data Kelompok Sasaran (PBI-013)
-    Route::middleware('role:3,4')->group(function () {
-        Route::get('/kelompok-sasaran/{kelompokSasaran}/edit', [KelompokSasaranController::class, 'edit'])
-            ->name('kelompok-sasaran.edit');
-        Route::put('/kelompok-sasaran/{kelompokSasaran}', [KelompokSasaranController::class, 'update'])
-            ->name('kelompok-sasaran.update');
-    });
-
-    // Menghapus Data Kelompok Sasaran (PBI-014)
-    Route::middleware('role:3,4')->group(function () {
-        Route::delete('/kelompok-sasaran/{kelompokSasaran}', [KelompokSasaranController::class, 'destroy'])
-            ->name('kelompok-sasaran.destroy');
-    });
-
-    // Khusus Petugas Data Wilayah (Role ID 1) & Admin (Role ID 4)
-    Route::middleware('role:1,4')->group(function () {
-        // PBI-001 & PBI-002: Manajemen Data Wilayah
-        Route::get('/wilayah', [WilayahController::class, 'index'])
-            ->name('wilayah.index');
-        Route::get('/wilayah/create', [WilayahController::class, 'create'])
-            ->name('wilayah.create');
-        Route::post('/wilayah', [WilayahController::class, 'store'])
-            ->name('wilayah.store');
-        Route::get('/wilayah/{wilayah}/edit', [WilayahController::class, 'edit'])
-            ->name('wilayah.edit');
-        Route::put('/wilayah/{wilayah}', [WilayahController::class, 'update'])
-            ->name('wilayah.update');
-        Route::delete('/wilayah/{wilayah}', [WilayahController::class, 'destroy'])
-            ->name('wilayah.destroy');
-
-        // PBI-005 & PBI-006: Data Wilayah & FSVA
-        Route::get('/data-wilayah', [DataWilayahFsvaController::class, 'index'])
-            ->name('data-wilayah.index');
-
-        // PBI-008: Halaman Data Indikator per Wilayah
-        Route::get('/indikator-wilayah', [DataIndikatorController::class, 'index'])
-            ->name('indikator-wilayah.index');
-
-        // PBI-009: Pengelompokan Wilayah Berdasarkan Prioritas
-        Route::get('/prioritas-wilayah', [PrioritasWilayahController::class, 'index'])
-            ->name('prioritas-wilayah.index');
-
-        Route::post('/prioritas-wilayah/proses', [PrioritasWilayahController::class, 'prosesPengelompokan'])
-            ->name('prioritas-wilayah.proses');
-
-        // PBI-010: Melihat Hasil Identifikasi Wilayah Prioritas
-        Route::get('/hasil-identifikasi', [HasilIdentifikasiController::class, 'index'])
-            ->name('hasil-identifikasi.index');
-    });
-
-    // Pengelolaan Data Program (PBI-017 & PBI-018) - Kecuali show karena didefinisikan manual
-    Route::resource('program', ProgramController::class)->except(['show']);
-
-    // PBI-019: Route Detail / Show Program Bantuan
-    Route::get('/program/{id}', [ProgramController::class, 'show'])->name('program.show');
-
-    // PBI-018: Route khusus eksplisit untuk Edit & Update Program Bantuan (jika dibutuhkan terpisah)
-    Route::middleware('role:3,4')->group(function () {
-        Route::get('/program/{id}/edit', [ProgramController::class, 'edit'])->name('program.edit');
-        Route::put('/program/{id}', [ProgramController::class, 'update'])->name('program.update');
-    });
-
-    // Pengelolaan Target Program (PBI-014)
-    Route::get('/target-program', [ProgramSasaranController::class, 'index'])
-        ->name('target-program.index');
-
-    Route::middleware('role:3,4')->group(function () {
-        Route::get('/target-program/create', [ProgramSasaranController::class, 'create'])
-            ->name('target-program.create');
-
-        Route::post('/target-program', [ProgramSasaranController::class, 'store'])
-            ->name('target-program.store');
-
-        Route::get('/target-program/{id}/edit', [ProgramSasaranController::class, 'edit'])
-            ->name('target-program.edit');
-
-        Route::put('/target-program/{id}', [ProgramSasaranController::class, 'update'])
-            ->name('target-program.update');
-
-        Route::delete('/target-program/{id}', [ProgramSasaranController::class, 'destroy'])
-            ->name('target-program.destroy');
-
-        // API FSVA untuk formulir target program
-        Route::get('/target-program/api/fsva', [ProgramSasaranController::class, 'getFsvaData'])
-            ->name('target-program.api.fsva');
-
-        Route::get('/target-program/api/kelompok', [ProgramSasaranController::class, 'getKelompokByWilayah'])
-            ->name('target-program.api.kelompok');
-    });
-});
-
-// Route khusus Pengelola Sistem Bapanas (Role ID 4)
-Route::middleware(['auth', 'role:4'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-
-        Route::get('/pengguna', [UserManagementController::class, 'index'])
-            ->name('pengguna.index');
-
-        Route::post('/pengguna/{id}/verify', [UserManagementController::class, 'verify'])
-            ->name('pengguna.verify');
-
-        Route::post('/pengguna/{id}/reject', [UserManagementController::class, 'reject'])
-            ->name('pengguna.reject');
-    });
