@@ -30,7 +30,9 @@ class UserManagementController extends Controller
             ->orderBy('id_roles')
             ->get();
 
-        $wilayah = Wilayah::orderBy('nama_wilayah')->get();
+        $wilayah = Wilayah::orderBy('provinsi')
+            ->orderBy('kabupaten_kota')
+            ->get();
 
         return view('admin.pengguna.index', compact(
             'penggunaPending',
