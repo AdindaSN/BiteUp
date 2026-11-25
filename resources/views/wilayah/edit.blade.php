@@ -15,7 +15,7 @@
             <span class="font-semibold text-slate-700">Edit</span>
         </nav>
         <h1 class="text-2xl font-bold text-[#29352E]">Edit Data Wilayah</h1>
-        <p class="text-sm text-gray-600">Perbarui informasi administratif, demografi, dan koordinat wilayah.</p>
+        <p class="text-sm text-gray-600">Perbarui informasi administratif dan tahun data wilayah.</p>
     </div>
 
     <!-- FORM CARD -->
@@ -82,7 +82,6 @@
                             <option value="">Pilih Jenis Wilayah</option>
                             <option value="1" {{ $selectedLevel === '1' ? 'selected' : '' }}>Provinsi</option>
                             <option value="2" {{ $selectedLevel === '2' ? 'selected' : '' }}>Kabupaten / Kota</option>
-                            <option value="3" {{ $selectedLevel === '3' ? 'selected' : '' }}>Kecamatan</option>
                         </select>
                         @error('level')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
@@ -92,76 +91,38 @@
                     <!-- WILAYAH INDUK -->
                     <div>
                         <label class="block text-sm font-medium text-[#29352E] mb-2">Wilayah Induk</label>
-                        @php $selectedParent = (string) old('parent_id', $wilayah->parent_id); @endphp
+                        @php $selectedParent = (string) old('parent_id', $selectedParentId ?? $wilayah->parent_id); @endphp
                         <select id="parentSelect"
                                 name="parent_id"
                                 class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition disabled:opacity-60">
-                            <option value="" data-default="true">-- Tidak ada (Jika Provinsi) --</option>
+                            <option value="">-- Tidak ada (Jika Provinsi) --</option>
                             @foreach($induk as $item)
-                                <option value="{{ $item->id_wilayah }}"
-                                        data-level="{{ $item->level }}"
-                                        {{ $selectedParent === (string) $item->id_wilayah ? 'selected' : '' }}>
-                                    {{ $item->nama_wilayah }} ({{ (int) $item->level === 1 ? 'Provinsi' : 'Kab/Kota' }})
+                                <option value="{{ $item->id_wilayah }}" {{ $selectedParent === (string) $item->id_wilayah ? 'selected' : '' }}>
+                                    {{ $item->provinsi }}
                                 </option>
                             @endforeach
                         </select>
-                        <p id="parentHelp" class="text-xs text-gray-400 mt-1">Kosongkan jika Provinsi; pilih Provinsi untuk Kab/Kota; pilih Kab/Kota untuk Kecamatan.</p>
+                        <p id="parentHelp" class="text-xs text-gray-400 mt-1">Kosongkan jika jenis wilayahnya adalah Provinsi.</p>
                         @error('parent_id')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- DATA DEMOGRAFI & GEOGRAFIS -->
-                <div class="pt-6 border-t border-gray-100 space-y-6">
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Data Demografi &amp; Geografis</h3>
-
-                    <!-- JUMLAH PENDUDUK -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#29352E] mb-2">Jumlah Penduduk (Jiwa) *</label>
-                        <input type="number"
-                               name="jumlah_penduduk"
-                               value="{{ old('jumlah_penduduk', $wilayah->jumlah_penduduk) }}"
-                               placeholder="Contoh: 1850000"
-                               min="0"
-                               required
-                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition">
-                        @error('jumlah_penduduk')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- LATITUDE -->
-                        <div>
-                            <label class="block text-sm font-medium text-[#29352E] mb-2">Latitude *</label>
-                            <input type="number"
-                                   step="any"
-                                   name="latitude"
-                                   value="{{ old('latitude', $wilayah->latitude) }}"
-                                   placeholder="Contoh: -7.431391"
-                                   required
-                                   class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition">
-                            @error('latitude')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- LONGITUDE -->
-                        <div>
-                            <label class="block text-sm font-medium text-[#29352E] mb-2">Longitude *</label>
-                            <input type="number"
-                                   step="any"
-                                   name="longitude"
-                                   value="{{ old('longitude', $wilayah->longitude) }}"
-                                   placeholder="Contoh: 109.247833"
-                                   required
-                                   class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition">
-                            @error('longitude')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
+                <!-- TAHUN -->
+                <div>
+                    <label class="block text-sm font-medium text-[#29352E] mb-2">Tahun *</label>
+                    <input type="number"
+                           name="tahun"
+                           value="{{ old('tahun', $tahunDefault) }}"
+                           placeholder="Contoh: 2025"
+                           min="2000"
+                           max="2100"
+                           required
+                           class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition">
+                    @error('tahun')
+                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
@@ -188,44 +149,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const parentSelect = document.getElementById('parentSelect');
     const parentHelp = document.getElementById('parentHelp');
 
-    function updateParentOptions() {
-        const selectedLevel = levelSelect.value;
-        const requiredParentLevel = selectedLevel === '2' ? '1' : (selectedLevel === '3' ? '2' : null);
-
-        if (selectedLevel === '1') {
+    function toggleParent() {
+        if (levelSelect.value === '1') {
             parentSelect.value = '';
             parentSelect.disabled = true;
             parentHelp.textContent = 'Provinsi tidak memerlukan wilayah induk.';
-            return;
-        }
-
-        parentSelect.disabled = false;
-        if (selectedLevel === '2') {
-            parentHelp.textContent = 'Pilih Provinsi induk untuk Kabupaten / Kota ini.';
-        } else if (selectedLevel === '3') {
-            parentHelp.textContent = 'Pilih Kabupaten / Kota induk untuk Kecamatan ini.';
         } else {
-            parentHelp.textContent = 'Kosongkan jika Provinsi; pilih Provinsi untuk Kab/Kota; pilih Kab/Kota untuk Kecamatan.';
+            parentSelect.disabled = false;
+            parentHelp.textContent = levelSelect.value === '2'
+                ? 'Pilih Provinsi induk untuk Kabupaten / Kota ini.'
+                : 'Kosongkan jika jenis wilayahnya adalah Provinsi.';
         }
-
-        Array.from(parentSelect.options).forEach(opt => {
-            if (opt.dataset.default) {
-                opt.textContent = selectedLevel === '2'
-                    ? '-- Pilih Provinsi Induk --'
-                    : (selectedLevel === '3' ? '-- Pilih Kabupaten / Kota Induk --' : '-- Tidak ada (Jika Provinsi) --');
-                return;
-            }
-            const match = !requiredParentLevel || opt.dataset.level === requiredParentLevel;
-            opt.hidden = !match;
-            opt.disabled = !match;
-            if (!match && opt.selected) {
-                parentSelect.value = '';
-            }
-        });
     }
 
-    levelSelect.addEventListener('change', updateParentOptions);
-    updateParentOptions();
+    levelSelect.addEventListener('change', toggleParent);
+    toggleParent();
 });
 </script>
 @endsection
