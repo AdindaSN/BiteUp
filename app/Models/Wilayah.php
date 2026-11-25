@@ -18,7 +18,6 @@ class Wilayah extends Model
     public const LEVEL = [
         1 => 'Provinsi',
         2 => 'Kabupaten/Kota',
-        3 => 'Kecamatan',
     ];
 
     protected $fillable = [
@@ -29,20 +28,16 @@ class Wilayah extends Model
         'tahun',
     ];
 
-    // Fallback agar Blade view modul lain yang masih membaca $wilayah->nama_wilayah tetap tampil
-    public function getNamaWilayahAttribute(): ?string
-    {
-        if (!empty($this->kabupaten_kota) && $this->kabupaten_kota !== '-') {
-            return $this->kabupaten_kota;
-        }
-
-        return $this->provinsi;
-    }
-
-    // Fallback agar Blade view modul lain yang masih membaca $wilayah->level tetap jalan
     public function getLevelAttribute(): int
     {
-        return (empty($this->kabupaten_kota) || $this->kabupaten_kota === '-') ? 1 : 2;
+        return empty($this->kabupaten_kota) ? 1 : 2;
+    }
+
+    public function getNamaWilayahAttribute(): string
+    {
+        return !empty($this->kabupaten_kota)
+            ? $this->kabupaten_kota
+            : ($this->provinsi ?? '-');
     }
 
     public function parent(): BelongsTo
@@ -58,6 +53,16 @@ class Wilayah extends Model
     public function children(): HasMany
     {
         return $this->hasMany(Wilayah::class, 'parent_id', 'id_wilayah');
+    }
+
+    public function hasilIkp(): HasMany
+    {
+        return $this->hasMany(HasilIkp::class, 'id_wilayah', 'id_wilayah');
+    }
+
+    public function dataIndikator(): HasMany
+    {
+        return $this->hasMany(DataIndikator::class, 'id_wilayah', 'id_wilayah');
     }
 
     public function users(): HasMany

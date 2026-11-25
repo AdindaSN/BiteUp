@@ -84,9 +84,15 @@
                         class="w-full text-xs font-medium border border-gray-300 rounded-xl px-4 py-3 bg-[#FCFCFA] text-gray-800 focus:outline-none focus:border-[#527653] focus:ring-1 focus:ring-[#527653] transition @error('id_wilayah') border-red-300 bg-red-50/20 @enderror">
                     <option value="">-- Pilih Wilayah --</option>
                     @foreach($daftarWilayah as $wilayah)
+                        @php
+                            $hasKab = $wilayah->kabupaten_kota && $wilayah->kabupaten_kota !== '-';
+                            $labelWilayah = $hasKab
+                                ? "{$wilayah->provinsi} — {$wilayah->kabupaten_kota} ({$wilayah->kode_wilayah})"
+                                : "{$wilayah->provinsi} ({$wilayah->kode_wilayah})";
+                        @endphp
                         <option value="{{ $wilayah->id_wilayah }}"
                                 {{ old('id_wilayah', $kelompokSasaran->id_wilayah) == $wilayah->id_wilayah ? 'selected' : '' }}>
-                            {{ $wilayah->kabupaten_kota }} — {{ $wilayah->provinsi }} ({{ $wilayah->kode_wilayah }})
+                            {{ $labelWilayah }}
                         </option>
                     @endforeach
                 </select>

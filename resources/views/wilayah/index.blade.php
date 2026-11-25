@@ -30,7 +30,7 @@
                 <span class="font-semibold text-slate-700">Wilayah</span>
             </nav>
             <h1 class="text-2xl font-bold text-slate-900">Data Wilayah</h1>
-            <p class="text-sm text-slate-500 mt-0.5">Daftar seluruh wilayah administratif provinsi, kabupaten/kota, dan kecamatan yang terdaftar dalam sistem.</p>
+            <p class="text-sm text-slate-500 mt-0.5">Daftar seluruh wilayah administratif provinsi dan kabupaten/kota yang terdaftar dalam sistem.</p>
         </div>
         @if(Route::has('wilayah.create'))
             <div>
@@ -59,7 +59,7 @@
                     <input type="text"
                            name="cari"
                            value="{{ request('cari') }}"
-                           placeholder="Ketik nama wilayah atau kode wilayah..."
+                           placeholder="Ketik nama provinsi, kabupaten/kota, atau kode..."
                            class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#315B46] transition">
                 </div>
             </div>
@@ -71,7 +71,6 @@
                     <option value="" {{ request('jenis') === '' || !request()->filled('jenis') ? 'selected' : '' }}>Semua Jenis</option>
                     <option value="provinsi" {{ request('jenis') === 'provinsi' ? 'selected' : '' }}>Provinsi</option>
                     <option value="kabupaten_kota" {{ request('jenis') === 'kabupaten_kota' ? 'selected' : '' }}>Kabupaten/Kota</option>
-                    <option value="kecamatan" {{ request('jenis') === 'kecamatan' ? 'selected' : '' }}>Kecamatan</option>
                 </select>
             </div>
 
@@ -98,19 +97,18 @@
                         <th class="py-3.5 px-6">Nama Wilayah</th>
                         <th class="py-3.5 px-6">Jenis</th>
                         <th class="py-3.5 px-6">Wilayah Induk</th>
-                        <th class="py-3.5 px-6 text-right">Jumlah Penduduk</th>
+                        <th class="py-3.5 px-6 text-center">Tahun</th>
                         <th class="py-3.5 px-6 text-center w-44">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm text-slate-800">
                     @forelse($wilayah as $index => $item)
                         @php
-                            $level = (int) $item->level;
+                            $isProvinsi = $item->level === 1;
                             $namaUtama = $item->nama_wilayah;
-                            $jenisLabel = $level === 1 ? 'Provinsi' : ($level === 2 ? 'Kabupaten/Kota' : 'Kecamatan');
-                            $wilayahInduk = $level === 1 ? '-' : ($item->parent->nama_wilayah ?? '-');
-                            $penduduk = (int) ($item->jumlah_penduduk ?? 0);
-                            $pendudukFormatted = number_format($penduduk, 0, ',', '.') . ' jiwa';
+                            $jenisLabel = $isProvinsi ? 'Provinsi' : 'Kabupaten/Kota';
+                            $wilayahInduk = $isProvinsi ? '-' : ($item->parent->provinsi ?? $item->provinsi ?? '-');
+                            $tahunFsva = $item->tahun ?? $item->hasil_ikp_max_tahun ?? $item->data_indikator_max_tahun ?? '-';
                         @endphp
                         <tr class="hover:bg-slate-50/60 transition">
                             <td class="py-4 px-6 text-slate-400 font-medium tabular-nums">
@@ -121,25 +119,21 @@
                                 <div class="text-xs text-slate-400 mt-0.5">Kode: {{ $item->kode_wilayah ?? '-' }}</div>
                             </td>
                             <td class="py-4 px-6">
-                                @if($level === 1)
+                                @if($isProvinsi)
                                     <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70 rounded-full">
                                         Provinsi
                                     </span>
-                                @elseif($level === 2)
+                                @else
                                     <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80 rounded-full">
                                         Kabupaten/Kota
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/70 rounded-full">
-                                        Kecamatan
                                     </span>
                                 @endif
                             </td>
                             <td class="py-4 px-6 text-slate-600">
                                 {{ $wilayahInduk }}
                             </td>
-                            <td class="py-4 px-6 text-right font-semibold text-slate-800 tabular-nums">
-                                {{ number_format($penduduk, 0, ',', '.') }} <span class="font-normal text-slate-400 text-xs">jiwa</span>
+                            <td class="py-4 px-6 text-center font-semibold text-slate-700 tabular-nums">
+                                {{ $tahunFsva }}
                             </td>
                             <td class="py-4 px-6">
                                 <div class="flex items-center justify-center gap-2">
@@ -161,7 +155,7 @@
                                                 data-kode="{{ $item->kode_wilayah ?? '-' }}"
                                                 data-jenis="{{ $jenisLabel }}"
                                                 data-induk="{{ $wilayahInduk }}"
-                                                data-penduduk="{{ $pendudukFormatted }}"
+                                                data-tahun="{{ $tahunFsva }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50/80 hover:bg-red-100 border border-red-200/80 rounded-lg transition cursor-pointer">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -234,8 +228,8 @@
                     <span id="modalWilayahInduk" class="font-medium text-slate-700 text-right">-</span>
                 </div>
                 <div class="flex justify-between gap-4">
-                    <span class="text-slate-400">Jumlah Penduduk</span>
-                    <span id="modalWilayahPenduduk" class="font-medium text-slate-700 text-right">-</span>
+                    <span class="text-slate-400">Tahun Data</span>
+                    <span id="modalWilayahTahun" class="font-medium text-slate-700 text-right">-</span>
                 </div>
             </div>
         </div>
@@ -266,7 +260,7 @@ function openDeleteModal(button) {
     document.getElementById('modalWilayahKode').textContent = button.dataset.kode;
     document.getElementById('modalWilayahJenis').textContent = button.dataset.jenis;
     document.getElementById('modalWilayahInduk').textContent = button.dataset.induk;
-    document.getElementById('modalWilayahPenduduk').textContent = button.dataset.penduduk;
+    document.getElementById('modalWilayahTahun').textContent = button.dataset.tahun;
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
