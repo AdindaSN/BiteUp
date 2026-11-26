@@ -7,11 +7,13 @@
 @section('content')
 @php
     $warna = [
-        'Rumah Tangga Miskin' => 'amber',
-        'Ibu Hamil'           => 'pink',
-        'Balita'              => 'blue',
-        'Anak Sekolah'        => 'purple',
-        'Lansia'              => 'teal',
+        'Rumah Tangga Miskin'          => 'amber',
+        'Masyarakat Miskin Desil 1'    => 'amber',
+        'Keluarga Rentan Rawan Pangan' => 'green',
+        'Ibu Hamil'                    => 'pink',
+        'Balita'                       => 'blue',
+        'Anak Sekolah'                 => 'purple',
+        'Lansia'                       => 'teal',
     ];
     $canManage = in_array((int) Auth::user()->id_roles, [3, 4]);
 @endphp
@@ -180,6 +182,13 @@
         .ks-green  { background: #dcfce7; color: #166534; }
         .ks-empty { text-align: center; padding: 36px 14px !important; color: #6b7280; }
         .ks-actions { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        .ks-btn-detail {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 8px;
+            background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7;
+            cursor: pointer; transition: all 0.15s ease;
+        }
+        .ks-btn-detail:hover { background: #dcfce7; color: #166534; }
         .ks-btn-edit {
             display: inline-flex; align-items: center; justify-content: center;
             width: 32px; height: 32px; border-radius: 8px;
@@ -293,9 +302,7 @@
                         <th>Wilayah</th>
                         <th style="width:90px">Tahun</th>
                         <th class="ks-num" style="width:140px">Jumlah</th>
-                        @if($canManage)
-                            <th class="ks-center" style="width:110px">Aksi</th>
-                        @endif
+                        <th class="ks-center" style="width:140px">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -303,25 +310,40 @@
                         @php
                             $kab = trim($item->wilayah->kabupaten_kota ?? '');
                             $prov = trim($item->wilayah->provinsi ?? '');
+                            $kodeWil = trim($item->wilayah->kode_wilayah ?? '-');
                             $namaWilayah = ($kab && $kab !== '-')
                                 ? $kab
                                 : (($prov && $prov !== '-')
                                     ? $prov
-                                    : ($item->wilayah->kode_wilayah ?? '-'));
+                                    : $kodeWil);
+                            $provinsiDetail = ($prov && $prov !== '-') ? $prov : '-';
+                            $kabDetail = ($kab && $kab !== '-') ? $kab : '-';
+                            $namaJenis = $item->jenisKelompok->nama_jenis ?? '-';
+                            $jumlahFormat = number_format($item->jumlah, 0, ',', '.');
                         @endphp
                         <tr>
                             <td>{{ $kelompok->firstItem() + $loop->index }}</td>
                             <td>
-                                <span class="ks-badge ks-{{ $warna[$item->jenisKelompok->nama_jenis ?? ''] ?? 'green' }}">
-                                    {{ $item->jenisKelompok->nama_jenis ?? '-' }}
+                                <span class="ks-badge ks-{{ $warna[$namaJenis] ?? 'green' }}">
+                                    {{ $namaJenis }}
                                 </span>
                             </td>
                             <td>{{ $namaWilayah }}</td>
                             <td>{{ $item->tahun }}</td>
-                            <td class="ks-num">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
-                            @if($canManage)
-                                <td class="ks-center">
-                                    <div class="ks-actions">
+                            <td class="ks-num">{{ $jumlahFormat }}</td>
+                            <td class="ks-center">
+                                <div class="ks-actions">
+                                    <button type="button"
+                                            title="Lihat Detail"
+                                            onclick="openDetailModal('{{ addslashes($namaJenis) }}', '{{ addslashes($provinsiDetail) }}', '{{ addslashes($kabDetail) }}', '{{ addslashes($kodeWil) }}', '{{ $item->tahun }}', '{{ $jumlahFormat }}')"
+                                            class="ks-btn-detail">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+
+                                    @if($canManage)
                                         <a href="{{ route('kelompok-sasaran.edit', $item->id_kelompok_sasaran) }}"
                                            title="Ubah Data"
                                            class="ks-btn-edit">
@@ -332,19 +354,19 @@
 
                                         <button type="button"
                                                 title="Hapus Data"
-                                                onclick="openDeleteModal('{{ route('kelompok-sasaran.destroy', $item->id_kelompok_sasaran) }}', '{{ addslashes($item->jenisKelompok->nama_jenis ?? 'Data ini') }}', '{{ $item->tahun }}')"
+                                                onclick="openDeleteModal('{{ route('kelompok-sasaran.destroy', $item->id_kelompok_sasaran) }}', '{{ addslashes($namaJenis) }}', '{{ $item->tahun }}')"
                                                 class="ks-btn-delete">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
-                                    </div>
-                                </td>
-                            @endif
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $canManage ? 6 : 5 }}" class="ks-empty">
+                            <td colspan="6" class="ks-empty">
                                 Belum ada data kelompok sasaran.
                             </td>
                         </tr>
@@ -355,6 +377,51 @@
 
         <div style="margin-top: 16px;">
             {{ $kelompok->links('vendor.pagination.biteup') }}
+        </div>
+    </div>
+
+    <!-- MODAL LIHAT DETAIL -->
+    <div id="detailModal" onclick="if(event.target === this) closeDetailModal()" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); padding: 16px;">
+        <div style="background: #fff; border-radius: 16px; max-width: 460px; width: 100%; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #f3f4f6;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #29352E; margin: 0;">Detail Data Kelompok Sasaran</h3>
+                <button type="button" onclick="closeDetailModal()" style="background: none; border: none; font-size: 20px; color: #9ca3af; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+
+            <div style="display: grid; gap: 12px; font-size: 13.5px;">
+                <div style="display: flex; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
+                    <span style="color: #6b7280;">Kategori Sasaran</span>
+                    <strong id="detailKategori" style="color: #1f2937; text-align: right;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
+                    <span style="color: #6b7280;">Provinsi</span>
+                    <strong id="detailProvinsi" style="color: #1f2937; text-align: right;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
+                    <span style="color: #6b7280;">Kabupaten / Kota</span>
+                    <strong id="detailKabupaten" style="color: #1f2937; text-align: right;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
+                    <span style="color: #6b7280;">Kode Wilayah (BPS)</span>
+                    <strong id="detailKode" style="color: #1f2937; text-align: right;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
+                    <span style="color: #6b7280;">Tahun Pendataan</span>
+                    <strong id="detailTahun" style="color: #1f2937; text-align: right;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 12px;">
+                    <span style="color: #6b7280;">Jumlah Populasi</span>
+                    <strong id="detailJumlah" style="color: #315B46; text-align: right;">-</strong>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <button type="button"
+                        onclick="closeDetailModal()"
+                        style="padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff; background: #315B46; border: none; cursor: pointer;">
+                    Tutup
+                </button>
+            </div>
         </div>
     </div>
 
@@ -393,6 +460,20 @@
     </div>
 
     <script>
+        function openDetailModal(kategori, provinsi, kabupaten, kode, tahun, jumlah) {
+            document.getElementById('detailKategori').textContent = kategori;
+            document.getElementById('detailProvinsi').textContent = provinsi;
+            document.getElementById('detailKabupaten').textContent = kabupaten;
+            document.getElementById('detailKode').textContent = kode;
+            document.getElementById('detailTahun').textContent = tahun;
+            document.getElementById('detailJumlah').textContent = jumlah + ' Jiwa / KK';
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
         function openDeleteModal(actionUrl, nama, tahun) {
             const modal = document.getElementById('deleteModal');
             document.getElementById('deleteForm').action = actionUrl;
