@@ -3,157 +3,159 @@
 @section('title', 'Tambah Wilayah')
 
 @section('content')
-<div class="flex-1 p-6 lg:p-10 overflow-y-auto">
+<div class="max-w-3xl mx-auto space-y-6">
 
-    <!-- HEADER SECTION -->
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-[#29352E]">Tambah Wilayah Baru</h1>
-        <p class="text-sm text-gray-600">Formulir penambahan data wilayah administratif dan ketahanan pangan.</p>
+    <!-- BREADCRUMB & HEADER -->
+    <div>
+        <nav class="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
+            <a href="{{ route('dashboard') }}" class="hover:text-slate-600 transition">Beranda</a>
+            <span>&rsaquo;</span>
+            <a href="{{ route('wilayah.index') }}" class="hover:text-slate-600 transition">Wilayah</a>
+            <span>&rsaquo;</span>
+            <span class="font-semibold text-slate-700">Tambah Wilayah</span>
+        </nav>
+        <h1 class="text-2xl font-bold text-slate-900">Tambah Wilayah Baru</h1>
+        <p class="text-sm text-slate-500 mt-0.5">Daftarkan master data wilayah administratif tingkat Provinsi atau Kabupaten/Kota.</p>
     </div>
 
-    <!-- FORM CARD -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8 max-w-3xl">
+    <!-- ALERT VALIDASI -->
+    @if($errors->any())
+        <div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm space-y-1">
+            <p class="font-semibold">Periksa kembali data yang dimasukkan:</p>
+            <ul class="list-disc list-inside text-xs space-y-0.5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        <!-- ERROR VALIDATION ALERT -->
-        @if ($errors->any())
-            <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm">
-                <span class="font-bold block mb-1">Terjadi kesalahan input:</span>
-                <ul class="list-disc pl-5 space-y-1">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form action="{{ route('wilayah.store') }}" method="POST" novalidate>
+    <!-- FORM TAMBAH WILAYAH -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+        <form action="{{ route('wilayah.store') }}" method="POST" class="space-y-5">
             @csrf
 
-            <div class="space-y-6">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Informasi Administratif</h3>
+            <!-- JENIS WILAYAH -->
+            <div>
+                <label for="level" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Jenis Wilayah <span class="text-red-500">*</span>
+                </label>
+                <select id="level"
+                        name="level"
+                        onchange="toggleParentField()"
+                        class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-[#315B46] transition">
+                    <option value="2" {{ old('level', '2') == '2' ? 'selected' : '' }}>Kabupaten / Kota</option>
+                    <option value="1" {{ old('level') == '1' ? 'selected' : '' }}>Provinsi</option>
+                </select>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- KODE WILAYAH -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#29352E] mb-2">Kode Wilayah *</label>
-                        <input type="text"
-                               name="kode_wilayah"
-                               value="{{ old('kode_wilayah') }}"
-                               placeholder="Contoh: 33.02"
-                               required
-                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition">
-                        @error('kode_wilayah')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+            <!-- PROVINSI INDUK -->
+            <div>
+                <label for="parent_id" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Provinsi <span id="parentRequiredMark" class="text-red-500">*</span>
+                </label>
+                <select id="parent_id"
+                        name="parent_id"
+                        class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed focus:outline-none focus:border-[#315B46] transition">
+                    <option value="">-- Pilih Provinsi --</option>
+                    @foreach($daftarProvinsi as $prov)
+                        <option value="{{ $prov->id_wilayah }}" {{ old('parent_id') == $prov->id_wilayah ? 'selected' : '' }}>
+                            {{ $prov->provinsi }} (Kode: {{ $prov->kode_wilayah }})
+                        </option>
+                    @endforeach
+                </select>
+                <p id="parentHelpText" class="text-xs text-slate-400 mt-1">Pilih provinsi induk untuk Kabupaten/Kota ini.</p>
+                @error('parent_id')
+                    <p class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-                    <!-- NAMA WILAYAH -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#29352E] mb-2">Nama Wilayah *</label>
-                        <input type="text"
-                               name="nama_wilayah"
-                               value="{{ old('nama_wilayah') }}"
-                               placeholder="Contoh: Papua / Banyumas"
-                               required
-                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition">
-                        @error('nama_wilayah')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
+            <!-- KODE WILAYAH (ANGKA SAJA & UNIK) -->
+            <div>
+                <label for="kode_wilayah" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Kode Wilayah <span class="text-red-500">*</span>
+                </label>
+                <input type="text"
+                       id="kode_wilayah"
+                       name="kode_wilayah"
+                       value="{{ old('kode_wilayah') }}"
+                       inputmode="numeric"
+                       pattern="[0-9]+"
+                       maxlength="20"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                       placeholder="Contoh: 3302 (hanya angka)"
+                       class="w-full px-4 py-2.5 bg-white border {{ $errors->has('kode_wilayah') ? 'border-red-400' : 'border-slate-200' }} rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#315B46] transition">
+                <p class="text-xs text-slate-400 mt-1">Wajib berupa angka saja dan belum pernah dipakai oleh wilayah lain.</p>
+                @error('kode_wilayah')
+                    <p class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- LEVEL / JENIS WILAYAH -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#29352E] mb-2">Jenis Wilayah *</label>
-                        <select id="levelSelect"
-                                name="level"
-                                required
-                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition">
-                            <option value="">Pilih Jenis Wilayah</option>
-                            <option value="1" {{ old('level') == '1' ? 'selected' : '' }}>Provinsi</option>
-                            <option value="2" {{ old('level') == '2' ? 'selected' : '' }}>Kabupaten / Kota</option>
-                        </select>
-                        @error('level')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+            <!-- NAMA DAERAH -->
+            <div>
+                <label for="nama_wilayah" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Nama Daerah <span class="text-red-500">*</span>
+                </label>
+                <input type="text"
+                       id="nama_wilayah"
+                       name="nama_wilayah"
+                       value="{{ old('nama_wilayah') }}"
+                       placeholder="Contoh: Kabupaten Banyumas atau Jawa Tengah"
+                       class="w-full px-4 py-2.5 bg-white border {{ $errors->has('nama_wilayah') ? 'border-red-400' : 'border-slate-200' }} rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#315B46] transition">
+                @error('nama_wilayah')
+                    <p class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-                    <!-- WILAYAH INDUK -->
-                    <div>
-                        <label class="block text-sm font-medium text-[#29352E] mb-2">Wilayah Induk</label>
-                        <select id="parentSelect"
-                                name="parent_id"
-                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition disabled:opacity-60">
-                            <option value="">-- Tidak ada (Jika Provinsi) --</option>
-                            @foreach($induk as $item)
-                                <option value="{{ $item->id_wilayah }}" {{ old('parent_id') == $item->id_wilayah ? 'selected' : '' }}>
-                                    {{ $item->provinsi }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p id="parentHelp" class="text-xs text-gray-400 mt-1">Kosongkan jika jenis wilayahnya adalah Provinsi.</p>
-                        @error('parent_id')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <!-- TAHUN -->
-                <div>
-                    <label class="block text-sm font-medium text-[#29352E] mb-2">Tahun *</label>
-                    <input type="number"
-                           name="tahun"
-                           value="{{ old('tahun') }}"
-                           placeholder="Contoh: 2025"
-                           min="2000"
-                           max="2100"
-                           required
-                           class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#315B46] transition">
-                    @error('tahun')
-                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+            <!-- DATA TERBARU (TETAP 2025) -->
+            <div>
+                <label for="tahun" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Data Terbaru (Tahun) <span class="text-red-500">*</span>
+                </label>
+                <input type="number"
+                       id="tahun"
+                       name="tahun"
+                       value="2025"
+                       readonly
+                       class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 cursor-not-allowed focus:outline-none">
+                <p class="text-xs text-slate-400 mt-1">Ditetapkan pada tahun 2025 sesuai periode dataset FSVA terbaru.</p>
             </div>
 
             <!-- TOMBOL AKSI -->
-            <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
                 <a href="{{ route('wilayah.index') }}"
-                   class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition">
+                   class="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl text-sm font-semibold transition">
                     Batal
                 </a>
                 <button type="submit"
-                        class="px-6 py-2.5 bg-[#315B46] hover:bg-[#274837] text-white rounded-xl text-sm font-medium transition shadow-sm">
-                    Simpan
+                        class="px-6 py-2.5 bg-[#315B46] hover:bg-[#274837] text-white rounded-xl text-sm font-semibold transition shadow-xs cursor-pointer">
+                    Simpan Wilayah
                 </button>
             </div>
         </form>
-
     </div>
 
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const levelSelect = document.getElementById('levelSelect');
-    const parentSelect = document.getElementById('parentSelect');
-    const parentHelp = document.getElementById('parentHelp');
+function toggleParentField() {
+    const level = document.getElementById('level').value;
+    const parentSelect = document.getElementById('parent_id');
+    const requiredMark = document.getElementById('parentRequiredMark');
+    const helpText = document.getElementById('parentHelpText');
 
-    function toggleParent() {
-        if (levelSelect.value === '1') {
-            parentSelect.value = '';
-            parentSelect.disabled = true;
-            parentHelp.textContent = 'Provinsi tidak memerlukan wilayah induk.';
-        } else {
-            parentSelect.disabled = false;
-            parentHelp.textContent = levelSelect.value === '2'
-                ? 'Pilih Provinsi induk untuk Kabupaten / Kota ini.'
-                : 'Kosongkan jika jenis wilayahnya adalah Provinsi.';
-        }
+    if (level === '1') {
+        parentSelect.value = '';
+        parentSelect.disabled = true;
+        requiredMark.classList.add('hidden');
+        helpText.textContent = 'Tidak perlu memilih provinsi induk karena jenis wilayah adalah Provinsi.';
+    } else {
+        parentSelect.disabled = false;
+        requiredMark.classList.remove('hidden');
+        helpText.textContent = 'Pilih provinsi induk untuk Kabupaten/Kota ini.';
     }
+}
 
-    levelSelect.addEventListener('change', toggleParent);
-    toggleParent();
-});
+document.addEventListener('DOMContentLoaded', toggleParentField);
 </script>
 @endsection

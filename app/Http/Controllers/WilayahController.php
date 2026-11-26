@@ -16,11 +16,11 @@ class WilayahController extends Controller
             ->withMax('dataIndikator', 'tahun');
 
         if ($request->filled('cari')) {
-            $keyword = $request->cari;
-            $query->where(function ($q) use ($keyword) {
-                $q->where('kode_wilayah', 'like', '%' . $keyword . '%')
-                  ->orWhere('provinsi', 'like', '%' . $keyword . '%')
-                  ->orWhere('kabupaten_kota', 'like', '%' . $keyword . '%');
+            $cari = trim($request->cari);
+            $query->where(function ($q) use ($cari) {
+                $q->where('provinsi', 'like', "%{$cari}%")
+                  ->orWhere('kabupaten_kota', 'like', "%{$cari}%")
+                  ->orWhere('kode_wilayah', 'like', "%{$cari}%");
             });
         }
 
@@ -28,150 +28,166 @@ class WilayahController extends Controller
             $query->where('provinsi', $request->provinsi);
         }
 
-        $wilayah = $query->orderBy('kode_wilayah')
-            ->orderBy('provinsi')
-            ->orderBy('kabupaten_kota')
-            ->paginate(10)
+        $wilayah = $query->orderBy('kode_wilayah', 'asc')
+            ->paginate(15)
             ->withQueryString();
 
-        $daftarProvinsi = Wilayah::whereNotNull('provinsi')->where('provinsi', '!=', '')->distinct()->orderBy('provinsi')->pluck('provinsi');
+        $daftarProvinsi = Wilayah::whereNotNull('provinsi')
+            ->where('provinsi', '!=', '')
+            ->distinct()
+            ->orderBy('provinsi')
+            ->pluck('provinsi');
 
         return view('wilayah.index', compact('wilayah', 'daftarProvinsi'));
     }
 
     public function create()
     {
-        $induk = $this->getDaftarProvinsi();
+        $daftarProvinsi = $this->getProvinsiIndukList();
 
-        return view('wilayah.create', compact('induk'));
+        return view('wilayah.create', compact('daftarProvinsi'));
     }
 
     public function store(Request $request)
     {
-        $validated = $this->validateWilayah($request);
-        $level = (int) $validated['level'];
+        $data = $this->validateWilayah($request);
 
-        $wilayah = new Wilayah();
-        $this->fillWilayahData($wilayah, $validated, $level);
-        $wilayah->save();
+        Wilayah::create($data);
 
-        return redirect()
-            ->route('wilayah.index')
-            ->with('success', 'Data wilayah berhasil ditambahkan!');
+        $nama = $data['kabupaten_kota'] ?? $data['provinsi'];
+
+        return redirect()->route('wilayah.index')
+            ->with('success', "Data wilayah \"{$nama}\" (Kode: {$data['kode_wilayah']}) berhasil ditambahkan.");
     }
 
-    public function edit(Wilayah $wilayah)
+    public function edit($id)
     {
-        $induk = $this->getDaftarProvinsi();
+        $wilayah = Wilayah::findOrFail($id);
+        $daftarProvinsi = $this->getProvinsiIndukList($wilayah->id_wilayah);
 
-        $selectedParentId = null;
-        if ($wilayah->level === 2 && !empty($wilayah->provinsi)) {
-            $matched = $induk->firstWhere('provinsi', $wilayah->provinsi);
-            $selectedParentId = $matched ? $matched->id_wilayah : null;
+        return view('wilayah.edit', compact('wilayah', 'daftarProvinsi'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $wilayah = Wilayah::findOrFail($id);
+        $data = $this->validateWilayah($request, $wilayah->id_wilayah);
+
+        $wilayah->update($data);
+
+        $nama = $data['kabupaten_kota'] ?? $data['provinsi'];
+
+        return redirect()->route('wilayah.index')
+            ->with('success', "Data wilayah \"{$nama}\" (Kode: {$data['kode_wilayah']}) berhasil diperbarui.");
+    }
+
+    public function destroy($id)
+    {
+        $wilayah = Wilayah::findOrFail($id);
+        $nama = $wilayah->kabupaten_kota ?: $wilayah->provinsi;
+
+        if ($wilayah->children()->exists()) {
+            return redirect()->route('wilayah.index')
+                ->with('error', "Provinsi \"{$nama}\" tidak dapat dihapus karena masih memiliki kabupaten/kota di bawahnya.");
         }
 
-        $tahunDefault = $wilayah->tahun
-            ?? $wilayah->hasilIkp()->max('tahun')
-            ?? $wilayah->dataIndikator()->max('tahun');
-
-        return view('wilayah.edit', compact('wilayah', 'induk', 'selectedParentId', 'tahunDefault'));
-    }
-
-    public function update(Request $request, Wilayah $wilayah)
-    {
-        $validated = $this->validateWilayah($request, $wilayah);
-        $level = (int) $validated['level'];
-
-        $this->fillWilayahData($wilayah, $validated, $level);
-        $wilayah->save();
-
-        return redirect()
-            ->route('wilayah.index')
-            ->with('success', 'Data wilayah berhasil diperbarui!');
-    }
-
-    public function destroy(Wilayah $wilayah)
-    {
         try {
-            $nama = $wilayah->nama_wilayah;
             $wilayah->delete();
 
-            return redirect()
-                ->route('wilayah.index')
-                ->with('success', "Data wilayah \"{$nama}\" berhasil dihapus!");
+            return redirect()->route('wilayah.index')
+                ->with('success', "Data wilayah \"{$nama}\" berhasil dihapus.");
         } catch (QueryException $e) {
-            return redirect()
-                ->route('wilayah.index')
-                ->with('error', 'Data wilayah tidak dapat dihapus karena masih memiliki wilayah bawahan atau terhubung dengan data lain.');
+            return redirect()->route('wilayah.index')
+                ->with('error', "Wilayah \"{$nama}\" tidak dapat dihapus karena masih terhubung dengan data indikator FSVA atau program.");
         }
     }
 
-    private function getDaftarProvinsi()
+    private function getProvinsiIndukList($excludeId = null)
     {
-        return Wilayah::selectRaw('MIN(id_wilayah) as id_wilayah, provinsi')
-            ->whereNotNull('provinsi')
-            ->where('provinsi', '!=', '')
-            ->groupBy('provinsi')
-            ->orderBy('provinsi')
-            ->get();
-    }
+        $query = Wilayah::where(function ($q) {
+            $q->whereNull('kabupaten_kota')
+              ->orWhere('kabupaten_kota', '');
+        })->orderBy('provinsi');
 
-    private function fillWilayahData(Wilayah $wilayah, array $validated, int $level): void
-    {
-        $wilayah->kode_wilayah = $validated['kode_wilayah'];
-        $wilayah->tahun = (int) $validated['tahun'];
-
-        if ($level === 1) {
-            $wilayah->parent_id = null;
-            $wilayah->provinsi = $validated['nama_wilayah'];
-            $wilayah->kabupaten_kota = null;
-        } else {
-            $parent = Wilayah::findOrFail($validated['parent_id']);
-            $wilayah->parent_id = $parent->level === 1 ? $parent->id_wilayah : null;
-            $wilayah->provinsi = $parent->provinsi;
-            $wilayah->kabupaten_kota = $validated['nama_wilayah'];
-        }
-    }
-
-    private function validateWilayah(Request $request, ?Wilayah $wilayah = null): array
-    {
-        $uniqueKodeRule = Rule::unique('wilayah', 'kode_wilayah');
-        if ($wilayah) {
-            $uniqueKodeRule->ignore($wilayah->id_wilayah, 'id_wilayah');
+        if ($excludeId) {
+            $query->where('id_wilayah', '!=', $excludeId);
         }
 
-        return $request->validate([
-            'kode_wilayah' => ['required', 'string', 'max:50', $uniqueKodeRule],
+        return $query->get();
+    }
+
+    private function validateWilayah(Request $request, $ignoreId = null): array
+    {
+        $request->merge([
+            'kode_wilayah' => trim((string) $request->input('kode_wilayah')),
+            'nama_wilayah' => trim((string) $request->input('nama_wilayah')),
+            'tahun' => 2025,
+        ]);
+
+        $validated = $request->validate([
+            'level' => ['required', 'in:1,2'],
+            'kode_wilayah' => [
+                'required',
+                'regex:/^[0-9]+$/',
+                'max:20',
+                Rule::unique('wilayah', 'kode_wilayah')->ignore($ignoreId, 'id_wilayah'),
+            ],
             'nama_wilayah' => ['required', 'string', 'max:150'],
-            'level'        => ['required', 'in:1,2'],
-            'parent_id'    => [
+            'parent_id' => [
                 'nullable',
                 'required_if:level,2',
-                'exists:wilayah,id_wilayah',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (!$value) {
-                        return;
-                    }
-                    $parent = Wilayah::find($value);
-                    if ((int) $request->input('level') === 2 && (!$parent || empty($parent->provinsi))) {
-                        $fail('Wilayah induk provinsi tidak valid.');
+                function ($attribute, $value, $fail) use ($request, $ignoreId) {
+                    if ((string) $request->input('level') === '2') {
+                        if ($ignoreId && (int) $value === (int) $ignoreId) {
+                            $fail('Wilayah tidak dapat menjadi induk bagi dirinya sendiri.');
+                            return;
+                        }
+
+                        $parent = Wilayah::where('id_wilayah', $value)
+                            ->where(function ($q) {
+                                $q->whereNull('kabupaten_kota')
+                                  ->orWhere('kabupaten_kota', '');
+                            })
+                            ->first();
+
+                        if (!$parent) {
+                            $fail('Provinsi induk yang dipilih tidak valid.');
+                        }
                     }
                 },
             ],
-            'tahun'        => ['required', 'integer', 'digits:4', 'min:2000', 'max:2100'],
+            'tahun' => ['required', 'integer', 'in:2025'],
         ], [
+            'level.required' => 'Jenis wilayah wajib dipilih.',
+            'level.in' => 'Jenis wilayah harus Provinsi atau Kabupaten/Kota.',
             'kode_wilayah.required' => 'Kode wilayah wajib diisi.',
-            'kode_wilayah.unique'   => 'Kode wilayah sudah terdaftar dalam sistem.',
-            'nama_wilayah.required' => 'Nama wilayah wajib diisi.',
-            'level.required'        => 'Jenis wilayah wajib dipilih.',
-            'level.in'              => 'Jenis wilayah tidak valid.',
-            'parent_id.required_if' => 'Wilayah induk (Provinsi) wajib dipilih untuk Kabupaten / Kota.',
-            'parent_id.exists'      => 'Wilayah induk yang dipilih tidak valid.',
-            'tahun.required'        => 'Tahun wajib diisi.',
-            'tahun.integer'         => 'Tahun harus berupa angka.',
-            'tahun.digits'          => 'Tahun harus terdiri dari 4 digit angka (contoh: 2025).',
-            'tahun.min'             => 'Tahun minimal 2000.',
-            'tahun.max'             => 'Tahun maksimal 2100.',
+            'kode_wilayah.regex' => 'Kode wilayah hanya boleh berisi angka (0-9), tanpa huruf, spasi, atau titik.',
+            'kode_wilayah.max' => 'Kode wilayah maksimal 20 digit angka.',
+            'kode_wilayah.unique' => 'Kode wilayah sudah digunakan oleh daerah lain. Silakan masukkan kode angka yang berbeda.',
+            'nama_wilayah.required' => 'Nama daerah wajib diisi.',
+            'nama_wilayah.max' => 'Nama daerah maksimal 150 karakter.',
+            'parent_id.required_if' => 'Provinsi induk wajib dipilih untuk tingkat Kabupaten/Kota.',
+            'tahun.in' => 'Tahun data terbaru ditetapkan pada tahun 2025.',
         ]);
+
+        if ((string) $validated['level'] === '1') {
+            return [
+                'kode_wilayah' => $validated['kode_wilayah'],
+                'provinsi' => $validated['nama_wilayah'],
+                'kabupaten_kota' => null,
+                'parent_id' => null,
+                'tahun' => 2025,
+            ];
+        }
+
+        $parent = Wilayah::findOrFail($validated['parent_id']);
+
+        return [
+            'kode_wilayah' => $validated['kode_wilayah'],
+            'provinsi' => $parent->provinsi,
+            'kabupaten_kota' => $validated['nama_wilayah'],
+            'parent_id' => $parent->id_wilayah,
+            'tahun' => 2025,
+        ];
     }
 }
