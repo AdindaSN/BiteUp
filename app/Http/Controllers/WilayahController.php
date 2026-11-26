@@ -123,7 +123,7 @@ class WilayahController extends Controller
         $request->merge([
             'kode_wilayah' => trim((string) $request->input('kode_wilayah')),
             'nama_wilayah' => $cleanNama,
-            'tahun' => 2025,
+            'tahun' => (int) date('Y'),
         ]);
 
         $validated = $request->validate([
@@ -187,7 +187,7 @@ class WilayahController extends Controller
                     }
                 },
             ],
-            'tahun' => ['required', 'integer', 'in:2025'],
+            'tahun' => ['required', 'integer', 'min:2020', 'max:2100'],
         ], [
             'level.required' => 'Jenis wilayah wajib dipilih.',
             'level.in' => 'Jenis wilayah harus Provinsi atau Kabupaten/Kota.',
@@ -207,7 +207,7 @@ class WilayahController extends Controller
                 'provinsi' => $validated['nama_wilayah'],
                 'kabupaten_kota' => null,
                 'parent_id' => null,
-                'tahun' => 2025,
+                'tahun' => (int) date('Y'),
             ];
         }
 
@@ -218,7 +218,7 @@ class WilayahController extends Controller
             'provinsi' => $parent->provinsi,
             'kabupaten_kota' => $validated['nama_wilayah'],
             'parent_id' => $parent->id_wilayah,
-            'tahun' => 2025,
+            'tahun' => (int) date('Y'),
         ];
     }
 }

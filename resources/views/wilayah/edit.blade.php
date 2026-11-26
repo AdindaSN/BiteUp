@@ -121,10 +121,10 @@
                 <input type="number"
                        id="tahun"
                        name="tahun"
-                       value="2025"
+                       value="{{ date('Y') }}"
                        readonly
                        class="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 cursor-not-allowed focus:outline-none">
-                <p class="text-xs text-slate-400 mt-1">Ditetapkan pada tahun 2025 sesuai periode dataset FSVA terbaru.</p>
+                <p class="text-xs text-slate-400 mt-1">Otomatis diperbarui mengikuti tahun berjalan ({{ date('Y') }}) saat data wilayah diubah.</p>
             </div>
 
             <!-- TOMBOL AKSI -->
