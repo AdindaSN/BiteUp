@@ -65,12 +65,15 @@
             </div>
 
             <div class="md:col-span-3">
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Jenis Wilayah</label>
-                <select name="jenis"
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Filter Provinsi</label>
+                <select name="provinsi"
                         class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:border-[#315B46] transition">
-                    <option value="" {{ request('jenis') === '' || !request()->filled('jenis') ? 'selected' : '' }}>Semua Jenis</option>
-                    <option value="provinsi" {{ request('jenis') === 'provinsi' ? 'selected' : '' }}>Provinsi</option>
-                    <option value="kabupaten_kota" {{ request('jenis') === 'kabupaten_kota' ? 'selected' : '' }}>Kabupaten/Kota</option>
+                    <option value="" {{ !request()->filled('provinsi') ? 'selected' : '' }}>Semua Provinsi</option>
+                    @foreach($daftarProvinsi as $prov)
+                        <option value="{{ $prov }}" {{ request('provinsi') === $prov ? 'selected' : '' }}>
+                            {{ $prov }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -94,9 +97,10 @@
                 <thead>
                     <tr class="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/70">
                         <th class="py-3.5 px-6 w-16">No</th>
-                        <th class="py-3.5 px-6">Nama Wilayah</th>
+                        <th class="py-3.5 px-6 w-28">Kode</th>
+                        <th class="py-3.5 px-6">Nama Daerah</th>
                         <th class="py-3.5 px-6">Jenis</th>
-                        <th class="py-3.5 px-6">Wilayah Induk</th>
+                        <th class="py-3.5 px-6">Provinsi</th>
                         <th class="py-3.5 px-6 text-center">Tahun</th>
                         <th class="py-3.5 px-6 text-center w-44">Aksi</th>
                     </tr>
@@ -107,16 +111,18 @@
                             $isProvinsi = $item->level === 1;
                             $namaUtama = $item->nama_wilayah;
                             $jenisLabel = $isProvinsi ? 'Provinsi' : 'Kabupaten/Kota';
-                            $wilayahInduk = $isProvinsi ? '-' : ($item->parent->provinsi ?? $item->provinsi ?? '-');
+                            $provinsiNama = $item->parent->provinsi ?? $item->provinsi ?? '-';
                             $tahunFsva = $item->tahun ?? $item->hasil_ikp_max_tahun ?? $item->data_indikator_max_tahun ?? '-';
                         @endphp
                         <tr class="hover:bg-slate-50/60 transition">
                             <td class="py-4 px-6 text-slate-400 font-medium tabular-nums">
                                 {{ $wilayah->firstItem() + $index }}
                             </td>
-                            <td class="py-4 px-6">
-                                <div class="font-semibold text-slate-900">{{ $namaUtama }}</div>
-                                <div class="text-xs text-slate-400 mt-0.5">Kode: {{ $item->kode_wilayah ?? '-' }}</div>
+                            <td class="py-4 px-6 font-medium text-slate-600 tabular-nums">
+                                {{ $item->kode_wilayah ?? '-' }}
+                            </td>
+                            <td class="py-4 px-6 font-semibold text-slate-900">
+                                {{ $namaUtama }}
                             </td>
                             <td class="py-4 px-6">
                                 @if($isProvinsi)
@@ -130,7 +136,7 @@
                                 @endif
                             </td>
                             <td class="py-4 px-6 text-slate-600">
-                                {{ $wilayahInduk }}
+                                {{ $provinsiNama }}
                             </td>
                             <td class="py-4 px-6 text-center font-semibold text-slate-700 tabular-nums">
                                 {{ $tahunFsva }}
@@ -154,7 +160,7 @@
                                                 data-nama="{{ $namaUtama }}"
                                                 data-kode="{{ $item->kode_wilayah ?? '-' }}"
                                                 data-jenis="{{ $jenisLabel }}"
-                                                data-induk="{{ $wilayahInduk }}"
+                                                data-provinsi="{{ $provinsiNama }}"
                                                 data-tahun="{{ $tahunFsva }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50/80 hover:bg-red-100 border border-red-200/80 rounded-lg transition cursor-pointer">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,7 +174,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-10 text-slate-400 text-sm">
+                            <td colspan="7" class="text-center py-10 text-slate-400 text-sm">
                                 Belum ada data wilayah yang tersedia.
                             </td>
                         </tr>
@@ -212,7 +218,7 @@
             <!-- RINGKASAN DATA WILAYAH -->
             <div class="mt-5 p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2 text-sm">
                 <div class="flex justify-between gap-4">
-                    <span class="text-slate-400">Nama Wilayah</span>
+                    <span class="text-slate-400">Nama Daerah</span>
                     <span id="modalWilayahNama" class="font-semibold text-slate-900 text-right">-</span>
                 </div>
                 <div class="flex justify-between gap-4">
@@ -224,8 +230,8 @@
                     <span id="modalWilayahJenis" class="font-medium text-slate-700 text-right">-</span>
                 </div>
                 <div class="flex justify-between gap-4">
-                    <span class="text-slate-400">Wilayah Induk</span>
-                    <span id="modalWilayahInduk" class="font-medium text-slate-700 text-right">-</span>
+                    <span class="text-slate-400">Provinsi</span>
+                    <span id="modalWilayahProvinsi" class="font-medium text-slate-700 text-right">-</span>
                 </div>
                 <div class="flex justify-between gap-4">
                     <span class="text-slate-400">Tahun Data</span>
@@ -259,7 +265,7 @@ function openDeleteModal(button) {
     document.getElementById('modalWilayahNama').textContent = button.dataset.nama;
     document.getElementById('modalWilayahKode').textContent = button.dataset.kode;
     document.getElementById('modalWilayahJenis').textContent = button.dataset.jenis;
-    document.getElementById('modalWilayahInduk').textContent = button.dataset.induk;
+    document.getElementById('modalWilayahProvinsi').textContent = button.dataset.provinsi;
     document.getElementById('modalWilayahTahun').textContent = button.dataset.tahun;
 
     modal.classList.remove('hidden');

@@ -24,15 +24,8 @@ class WilayahController extends Controller
             });
         }
 
-        if ($request->filled('jenis')) {
-            if ($request->jenis === 'provinsi') {
-                $query->where(function ($q) {
-                    $q->whereNull('kabupaten_kota')->orWhere('kabupaten_kota', '');
-                });
-            } elseif ($request->jenis === 'kabupaten_kota') {
-                $query->whereNotNull('kabupaten_kota')
-                      ->where('kabupaten_kota', '!=', '');
-            }
+        if ($request->filled('provinsi')) {
+            $query->where('provinsi', $request->provinsi);
         }
 
         $wilayah = $query->orderBy('kode_wilayah')
@@ -41,7 +34,9 @@ class WilayahController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('wilayah.index', compact('wilayah'));
+        $daftarProvinsi = Wilayah::whereNotNull('provinsi')->where('provinsi', '!=', '')->distinct()->orderBy('provinsi')->pluck('provinsi');
+
+        return view('wilayah.index', compact('wilayah', 'daftarProvinsi'));
     }
 
     public function create()
