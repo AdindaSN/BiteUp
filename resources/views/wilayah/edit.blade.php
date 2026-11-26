@@ -86,14 +86,14 @@
                        name="kode_wilayah"
                        value="{{ old('kode_wilayah', $wilayah->kode_wilayah) }}"
                        inputmode="numeric"
-                       pattern="[0-9]+"
                        maxlength="20"
-                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                       oninput="validateKodeWilayah()"
                        placeholder="Contoh: 3302 (hanya angka)"
                        class="w-full px-4 py-2.5 bg-white border {{ $errors->has('kode_wilayah') ? 'border-red-400' : 'border-slate-200' }} rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#315B46] transition">
                 <p class="text-xs text-slate-400 mt-1">Wajib berupa angka saja dan tidak boleh sama dengan kode daerah lain.</p>
+                <p id="kodeClientError" class="text-xs text-red-600 font-medium mt-1 hidden">Kode wilayah harus berupa angka.</p>
                 @error('kode_wilayah')
-                    <p class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
+                    <p id="kodeServerError" class="text-xs text-red-600 font-medium mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -159,6 +159,27 @@ function toggleParentField() {
         parentSelect.disabled = false;
         requiredMark.classList.remove('hidden');
         helpText.textContent = 'Pilih provinsi induk untuk Kabupaten/Kota ini.';
+    }
+}
+
+function validateKodeWilayah() {
+    const input = document.getElementById('kode_wilayah');
+    const clientError = document.getElementById('kodeClientError');
+    const serverError = document.getElementById('kodeServerError');
+    const val = input.value.trim();
+
+    if (serverError) {
+        serverError.classList.add('hidden');
+    }
+
+    if (val !== '' && !/^[0-9]+$/.test(val)) {
+        clientError.classList.remove('hidden');
+        input.classList.remove('border-slate-200');
+        input.classList.add('border-red-400');
+    } else {
+        clientError.classList.add('hidden');
+        input.classList.remove('border-red-400');
+        input.classList.add('border-slate-200');
     }
 }
 

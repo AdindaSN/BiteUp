@@ -161,7 +161,7 @@ class WilayahController extends Controller
             'level.required' => 'Jenis wilayah wajib dipilih.',
             'level.in' => 'Jenis wilayah harus Provinsi atau Kabupaten/Kota.',
             'kode_wilayah.required' => 'Kode wilayah wajib diisi.',
-            'kode_wilayah.regex' => 'Kode wilayah hanya boleh berisi angka (0-9), tanpa huruf, spasi, atau titik.',
+            'kode_wilayah.regex' => 'Kode wilayah harus berupa angka.',
             'kode_wilayah.max' => 'Kode wilayah maksimal 20 digit angka.',
             'kode_wilayah.unique' => 'Kode wilayah sudah digunakan oleh daerah lain. Silakan masukkan kode angka yang berbeda.',
             'nama_wilayah.required' => 'Nama daerah wajib diisi.',
