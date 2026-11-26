@@ -101,7 +101,7 @@
                         <th class="py-3.5 px-6">Nama Daerah</th>
                         <th class="py-3.5 px-6">Jenis</th>
                         <th class="py-3.5 px-6">Provinsi</th>
-                        <th class="py-3.5 px-6 text-center">Tahun</th>
+                        <th class="py-3.5 px-6 text-center">Data Terbaru</th>
                         <th class="py-3.5 px-6 text-center w-44">Aksi</th>
                     </tr>
                 </thead>
@@ -234,7 +234,7 @@
                     <span id="modalWilayahProvinsi" class="font-medium text-slate-700 text-right">-</span>
                 </div>
                 <div class="flex justify-between gap-4">
-                    <span class="text-slate-400">Tahun Data</span>
+                    <span class="text-slate-400">Data Terbaru</span>
                     <span id="modalWilayahTahun" class="font-medium text-slate-700 text-right">-</span>
                 </div>
             </div>
