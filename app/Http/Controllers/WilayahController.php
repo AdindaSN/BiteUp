@@ -118,9 +118,11 @@ class WilayahController extends Controller
 
     private function validateWilayah(Request $request, $ignoreId = null): array
     {
+        $cleanNama = preg_replace('/\s+/', ' ', trim((string) $request->input('nama_wilayah')));
+
         $request->merge([
             'kode_wilayah' => trim((string) $request->input('kode_wilayah')),
-            'nama_wilayah' => trim((string) $request->input('nama_wilayah')),
+            'nama_wilayah' => $cleanNama,
             'tahun' => 2025,
         ]);
 
@@ -132,7 +134,36 @@ class WilayahController extends Controller
                 'max:20',
                 Rule::unique('wilayah', 'kode_wilayah')->ignore($ignoreId, 'id_wilayah'),
             ],
-            'nama_wilayah' => ['required', 'string', 'max:150'],
+            'nama_wilayah' => [
+                'required',
+                'string',
+                'max:150',
+                function ($attribute, $value, $fail) use ($request, $ignoreId) {
+                    $normalizedNama = mb_strtolower(preg_replace('/\s+/', ' ', trim((string) $value)), 'UTF-8');
+                    $level = (string) $request->input('level');
+
+                    $duplicateQuery = Wilayah::query();
+
+                    if ($ignoreId) {
+                        $duplicateQuery->where('id_wilayah', '!=', $ignoreId);
+                    }
+
+                    if ($level === '1') {
+                        $duplicateQuery->where(function ($q) {
+                            $q->whereNull('kabupaten_kota')
+                              ->orWhere('kabupaten_kota', '');
+                        })->whereRaw('LOWER(TRIM(provinsi)) = ?', [$normalizedNama]);
+                    } else {
+                        $duplicateQuery->whereNotNull('kabupaten_kota')
+                            ->where('kabupaten_kota', '!=', '')
+                            ->whereRaw('LOWER(TRIM(kabupaten_kota)) = ?', [$normalizedNama]);
+                    }
+
+                    if ($duplicateQuery->exists()) {
+                        $fail('Nama wilayah sudah ada. Silakan masukkan nama daerah yang berbeda.');
+                    }
+                },
+            ],
             'parent_id' => [
                 'nullable',
                 'required_if:level,2',
