@@ -15,6 +15,7 @@ class HasilIdentifikasiController extends Controller
             ->distinct()
             ->orderBy('tahun', 'desc')
             ->pluck('tahun')
+            ->map(fn ($t) => (int) $t)
             ->toArray();
 
         if (empty($daftarTahun)) {
@@ -23,7 +24,7 @@ class HasilIdentifikasiController extends Controller
 
         $tahunDipilih = (int) $request->input('tahun', $daftarTahun[0]);
         if (!in_array($tahunDipilih, $daftarTahun, true)) {
-            $tahunDipilih = $daftarTahun[0];
+            $tahunDipilih = (int) $daftarTahun[0];
         }
 
         // Daftar provinsi untuk filter tambahan
